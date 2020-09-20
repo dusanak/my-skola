@@ -8,7 +8,7 @@ def main():
     fig = plt.figure()
     ax = fig.gca(projection='3d')
 
-    data = ackley(2)
+    data = sphere(2)
 
     ax.plot_surface(data[0], data[1], data[2], cmap=cm.get_cmap("Spectral"))
 
@@ -44,6 +44,7 @@ def zakharov(dimension):
 
 def ackley(dimension):
     data = plot_generator(ackley_foo, dimension, generate_input(dimension, -32.768, 32.768, 0.1))
+
     return data 
 
 def sphere_foo(input_vector):
@@ -136,7 +137,7 @@ def ackley_foo(input_vector):
 def generate_input(dimension, min, max, step):
     data = []
 
-    for i in range(dimension):
+    for _ in range(dimension):
         data.append(np.arange(min, max, step))
     
     return data
