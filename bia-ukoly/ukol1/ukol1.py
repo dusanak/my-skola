@@ -10,7 +10,7 @@ def main():
 
     data = ackley(2)
 
-    ax.plot_surface(data[0], data[1], data[2], cmap=cm.coolwarm)
+    ax.plot_surface(data[0], data[1], data[2], cmap=cm.get_cmap("Spectral"))
 
     plt.show()
 
