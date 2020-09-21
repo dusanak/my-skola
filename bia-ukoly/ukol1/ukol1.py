@@ -8,7 +8,7 @@ def main():
     fig = plt.figure()
     ax = fig.gca(projection='3d')
 
-    data = sphere(2)
+    data = zakharov(2)
 
     ax.plot_surface(data[0], data[1], data[2], cmap=cm.get_cmap("Spectral"))
 
@@ -93,7 +93,7 @@ def michalewicz_foo(input_vector):
     result = 0
     
     for i, value in enumerate(input_vector):
-        result -= math.sin(value) * (math.sin((i * (value**2)) / math.pi)**(2 * m))
+        result -= math.sin(value) * (math.sin(((i + 1) * (value**2)) / math.pi)**(2 * m))
 
     return result
 
@@ -105,7 +105,7 @@ def zakharov_foo(input_vector):
 
     temp = 0
     for i, value in enumerate(input_vector):
-        temp += 0.5 * i * value
+        temp += 0.5 * (i + 1) * value
     
     result += temp**2
     result += temp**4
