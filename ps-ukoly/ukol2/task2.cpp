@@ -5,7 +5,7 @@
 #include <sys/wait.h>
 #include <sys/shm.h>
 
-#define DATA_SIZE 50
+#define DATA_SIZE 100
 
 int create_twenty_children();
 void parallel_bubblesort(int * data);
@@ -14,7 +14,7 @@ int check_and_swap(int * data, int index);
 int main() {
     //Ukol1
 
-    //create_twenty_children();
+    create_twenty_children();
 
     //Ukol2
     int shmid;
@@ -71,7 +71,6 @@ int create_twenty_children() {
 
     for (int i: return_values) {
         std::cout << i << " ";
-        std::cout << WEXITSTATUS(i) << ", ";
     }
     std::cout << std::endl;
  
@@ -86,7 +85,6 @@ int create_twenty_children() {
 //Vše se bude opakovat tak dlouho dokud budou potomci nějaké páry přehazovat. 
 //To zda potomek nějaké páry přehodil si můžete zjistit například návratovou hodnotou potomka. 
 //Vše si vyzkoušejte na poli a relativně malé délce do 100 prvků. (8.bodů)
-//TODO
 void parallel_bubblesort(int * data) {
     bool flag = true;
     int status;
