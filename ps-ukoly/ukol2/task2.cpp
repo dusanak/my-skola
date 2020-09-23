@@ -3,36 +3,44 @@
 #include <cstdlib>
 #include <unistd.h> 
 #include <sys/wait.h>
+#include <sys/shm.h>
+
+#define DATA_SIZE 50
 
 int create_twenty_children();
-void parallel_bubblesort(std::vector<int> & data);
-bool check_and_swap(std::vector<int> & data, int index);
+void parallel_bubblesort(int * data);
+int check_and_swap(int * data, int index);
 
 int main() {
     //Ukol1
 
-    if (create_twenty_children() == 1) {
-        return 2;
-    }
+    //create_twenty_children();
 
     //Ukol2
-    std::vector<int> data = std::vector<int>();
+    int shmid;
+    int *shmp;
+    int shmkey = getuid();
 
-    for (int i = 0; i < 50; i++) {
-        data.push_back(std::rand() % 100);
+    shmid = shmget(shmkey, DATA_SIZE * sizeof(int), 0644|IPC_CREAT);
+    shmp = (int*)shmat(shmid,NULL,0);
+
+    for (int i = 0; i < DATA_SIZE; i++) {
+        shmp[i] = std::rand() % 100;
     }
 
-    for (int i = 0; i < 50; i++) {
-        std::cout << data[i] << " ";
+    for (int i = 0; i < DATA_SIZE; i++) {
+        std::cout << shmp[i] << " ";
+    }
+    std::cout << std::endl;
+
+    parallel_bubblesort(shmp);
+
+    for (size_t i = 0; i < DATA_SIZE; i++) {
+        std::cout << shmp[i] << " ";
     }
     std::cout << std::endl;
 
-    parallel_bubblesort(data);
-
-    for (size_t i = 0; i < 50; i++) {
-        std::cout << data[i] << " ";
-    }
-    std::cout << std::endl;
+    shmctl(shmid, IPC_RMID, 0);
 
     return 1;
 }
@@ -50,7 +58,7 @@ int create_twenty_children() {
 
         if (pid == 0) {
             sleep(i + 1);
-            return 1;
+            exit(2);
         } else {
             children_pids.push_back(pid);
         }
@@ -79,29 +87,53 @@ int create_twenty_children() {
 //To zda potomek nějaké páry přehodil si můžete zjistit například návratovou hodnotou potomka. 
 //Vše si vyzkoušejte na poli a relativně malé délce do 100 prvků. (8.bodů)
 //TODO
-void parallel_bubblesort(std::vector<int> & data) {
+void parallel_bubblesort(int * data) {
     bool flag = true;
+    int status;
 
     while (flag) {
         flag = false;
 
-        for (size_t i = 0; i + 1 < data.size(); i += 2) {
-            if (data[i] > data[i + 1]) {
-                int tmp = data[i];
-                data[i] = data[i + 1];
-                data[i + 1] = tmp;
-                flag = true;
+        for (size_t i = 0; i + 1 < DATA_SIZE; i += 2) {
+            int pid = fork();
+            if (pid == 0) {
+                if (check_and_swap(data, i) == 1) {
+                    exit(1);
+                }
+                exit(0);
+            }
+        }
+
+        while (waitpid(-1, &status, 0) > 0) {
+            if (WEXITSTATUS(status) == 1) {
+                flag = 1;
+            }
+        }
+
+        for (size_t i = 1; i + 1 < DATA_SIZE; i += 2) {
+            int pid = fork();
+            if (pid == 0) {
+                if (check_and_swap(data, i) == 1) {
+                    exit(1);
+                }
+                exit(0);
+            }
+        }
+
+        while (waitpid(-1, &status, 0) > 0) {
+            if (WEXITSTATUS(status) == 1) {
+                flag = 1;
             }
         }
     }
 }
 
-bool check_and_swap(std::vector<int> & data, int index) {
+int check_and_swap(int * data, int index) {
     if (data[index] > data[index + 1]) {
         int tmp = data[index];
         data[index] = data[index + 1];
         data[index + 1] = tmp;
-        return true;
+        return 1;
     }
-    return false;
+    return 0;
 }
