@@ -13,7 +13,6 @@ int check_and_swap(int * data, int index);
 
 int main() {
     //Ukol1
-
     create_twenty_children();
 
     //Ukol2
