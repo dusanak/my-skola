@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import math
+import random
 
 def main():
     fig = plt.figure()
@@ -158,6 +159,24 @@ def plot_generator(foo, dimension, input_data):
     data_mesh.append(np.array(result))
 
     return data_mesh
+
+def blind_search(foo, dimension, min, max, tries):
+    best_case = float("inf")
+
+    for _ in range(tries):
+        for __ in range(10):
+            vector = []
+            
+            for j in range(dimension):
+                j.append(random.uniform(min, max))
+            
+            result = foo(vector)
+
+            if (result < best_case):
+                best_case = result
+
+    return best_case
+
 
 if __name__ == "__main__":
     main()
