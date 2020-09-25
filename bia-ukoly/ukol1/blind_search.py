@@ -7,16 +7,43 @@ import random
 import time
 
 def main():
-    blind_search_visualised(2, -5.12, 5.12, 20)
+    blind_search_visualised(2, -32.768, 32.768, 20)
 
 def sphere_visualised(dimension):
     data = plot_generator(sphere, dimension, generate_input(dimension, -5.12, 5.12, 0.01))
     return data
 
+def ackley_visualised(dimension):
+    data = plot_generator(ackley, dimension, generate_input(dimension, -32.768, 32.768, 0.1))
+
+    return data 
+
 def sphere(input_vector):
     result = 0
     for i in input_vector:
         result += i**2
+    return result
+
+def ackley(input_vector):
+    a = 20
+    b = 0.2
+    c = 2 * math.pi
+
+    result = 0
+
+    temp = 0
+    for i in input_vector:
+        temp += i**2
+    result += -a * math.exp(-b * math.sqrt((1 / len(input_vector)) * temp))
+
+    temp = 0
+    for i in input_vector:
+        temp += math.cos(c * i)
+    result -= math.exp((1 / len(input_vector)) * temp)
+
+    result += a
+    result += math.exp(1)
+
     return result
 
 def generate_input(dimension, min, max, step):
@@ -49,20 +76,20 @@ def blind_search_visualised(dimension, min, max, tries):
     best_case.append(float("inf"))
     
     fig = plt.figure()
-    data = sphere_visualised(2)
+    data = ackley_visualised(2)
     ax = fig.gca(projection='3d')
 
     plt.ion()
     plt.show()
 
     for _ in range(tries):
-        current_best_case = blind_search(sphere, dimension, min, max)
+        current_best_case = blind_search(ackley, dimension, min, max)
 
         if (current_best_case[dimension] < best_case[dimension]):
             best_case = current_best_case
 
         ax.clear()
-        ax.plot_surface(data[0], data[1], data[2], alpha = 0.5, cmap=cm.get_cmap("Spectral"))
+        ax.plot_surface(data[0], data[1], data[2], alpha = 0.25, cmap=cm.get_cmap("inferno"))
         ax.plot(*best_case, 'bo')
         
         print(best_case[dimension])
