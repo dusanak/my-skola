@@ -4,69 +4,75 @@ from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import math
 import random
+import time
 
 def main():
+    functions = [sphere_visualised, rosenbrock_visualised, 
+        rastrigin_visualised, griewangk_visualised, 
+        levy_visualised, michalewicz_visualised, 
+        zakharov_visualised, ackley_visualised]
+
     fig = plt.figure()
-    ax = fig.gca(projection='3d')
 
-    data = zakharov(2)
-
-    ax.plot_surface(data[0], data[1], data[2], cmap=cm.get_cmap("Spectral"))
+    for index, foo in enumerate(functions):
+        data = foo(2)
+        ax = fig.add_subplot(4, 3, index + 1, projection='3d')
+        ax.plot_surface(data[0], data[1], data[2], cmap=cm.get_cmap("Spectral"))
 
     plt.show()
 
-def sphere(dimension):
-    data = plot_generator(sphere_foo, dimension, generate_input(dimension, -5.12, 5.12, 0.01))
+def sphere_visualised(dimension):
+    data = plot_generator(sphere, dimension, generate_input(dimension, -5.12, 5.12, 0.01))
     return data
 
-def rosenbrock(dimension):
-    data = plot_generator(rosenbrock_foo, dimension, generate_input(dimension, -10, 10, 0.01))
+def rosenbrock_visualised(dimension):
+    data = plot_generator(rosenbrock, dimension, generate_input(dimension, -10, 10, 0.01))
     return data
 
-def rastrigin(dimension):
-    data = plot_generator(rastrigin_foo, dimension, generate_input(dimension, -5.12, 5.12, 0.01))
+def rastrigin_visualised(dimension):
+    data = plot_generator(rastrigin, dimension, generate_input(dimension, -5.12, 5.12, 0.01))
     return data
 
-def griewangk(dimension):
-    data = plot_generator(griewangk_foo, dimension, generate_input(dimension, -50, 50, 0.1))
+def griewangk_visualised(dimension):
+    data = plot_generator(griewangk, dimension, generate_input(dimension, -50, 50, 0.1))
     return data 
 
-def levy(dimension):
-    data = plot_generator(levy_foo, dimension, generate_input(dimension, -10, 10, 0.1))
+def levy_visualised(dimension):
+    data = plot_generator(levy, dimension, generate_input(dimension, -10, 10, 0.1))
     return data 
 
-def michalewicz(dimension):
-    data = plot_generator(michalewicz_foo, dimension, generate_input(dimension, 0, 5, 0.01))
+def michalewicz_visualised(dimension):
+    data = plot_generator(michalewicz, dimension, generate_input(dimension, 0, 5, 0.01))
     return data 
 
-def zakharov(dimension):
-    data = plot_generator(zakharov_foo, dimension, generate_input(dimension, -10, 10, 0.1))
+def zakharov_visualised(dimension):
+    data = plot_generator(zakharov, dimension, generate_input(dimension, -10, 10, 0.1))
     return data
 
-def ackley(dimension):
-    data = plot_generator(ackley_foo, dimension, generate_input(dimension, -32.768, 32.768, 0.1))
+def ackley_visualised(dimension):
+    data = plot_generator(ackley, dimension, generate_input(dimension, -32.768, 32.768, 0.1))
 
     return data 
 
-def sphere_foo(input_vector):
+def sphere(input_vector):
     result = 0
     for i in input_vector:
         result += i**2
     return result
 
-def rosenbrock_foo(input_vector):
+def rosenbrock(input_vector):
     result = 0
     for i in range(len(input_vector) - 1):
         result += (100*((input_vector[i+1] - (input_vector[i]**2))**2)) + ((input_vector[i] - 1)**2)
     return result
 
-def rastrigin_foo(input_vector):
+def rastrigin(input_vector):
     result = 10 * len(input_vector)
     for i in input_vector:
         result += (i**2) - (10 * math.cos(2 * math.pi * i)) 
     return result
 
-def griewangk_foo(input_vector):
+def griewangk(input_vector):
     vector_sum = 0
     for i in input_vector:
         vector_sum += ((i**2) / 4000)
@@ -77,7 +83,7 @@ def griewangk_foo(input_vector):
 
     return vector_sum - vector_product + 1
 
-def levy_foo(input_vector):
+def levy(input_vector):
     def levy_helper(input_number):
         return 1 + ((input_number - 1) / 4)
 
@@ -89,7 +95,7 @@ def levy_foo(input_vector):
 
     return result
 
-def michalewicz_foo(input_vector):
+def michalewicz(input_vector):
     m = 10
     result = 0
     
@@ -98,7 +104,7 @@ def michalewicz_foo(input_vector):
 
     return result
 
-def zakharov_foo(input_vector):
+def zakharov(input_vector):
     result = 0
 
     for i in input_vector:
@@ -113,7 +119,7 @@ def zakharov_foo(input_vector):
 
     return result
 
-def ackley_foo(input_vector):
+def ackley(input_vector):
     a = 20
     b = 0.2
     c = 2 * math.pi
@@ -159,24 +165,6 @@ def plot_generator(foo, dimension, input_data):
     data_mesh.append(np.array(result))
 
     return data_mesh
-
-def blind_search(foo, dimension, min, max, tries):
-    best_case = float("inf")
-
-    for _ in range(tries):
-        for __ in range(10):
-            vector = []
-            
-            for j in range(dimension):
-                j.append(random.uniform(min, max))
-            
-            result = foo(vector)
-
-            if (result < best_case):
-                best_case = result
-
-    return best_case
-
 
 if __name__ == "__main__":
     main()
