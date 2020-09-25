@@ -2,7 +2,7 @@
 #include <vector>
 #include <cstdlib>
 
-void parallel_bubblesort(std::vector<int> & data);
+void bubblesort(std::vector<int> & data);
 
 int main() {
     std::vector<int> data = std::vector<int>();
@@ -16,7 +16,7 @@ int main() {
     }
     std::cout << std::endl;
 
-    parallel_bubblesort(data);
+    bubblesort(data);
 
     for (size_t i = 0; i < 50; i++) {
         std::cout << data[i] << " ";
@@ -26,7 +26,7 @@ int main() {
     return 1;
 }
 
-void parallel_bubblesort(std::vector<int> & data) {
+void bubblesort(std::vector<int> & data) {
     bool flag = true;
 
     while (flag) {
