@@ -1,17 +1,21 @@
 #include <iostream>
 #include <vector>
 #include <cstdlib>
-#include <math.h>
+#include <cstring>
+#include <cmath>
 #include <unistd.h> 
 #include <sys/wait.h>
 #include <sys/shm.h>
 #include <openssl/evp.h>
 
 #define STRING_LENGTH 2
+#define NUMBER_OF_PROCESSES 8
 
 //todo https://www.openssl.org/docs/man1.0.2/man3/EVP_DigestInit.html
+//https://www.openssl.org/docs/man1.0.2/man3/md5.html
 
 void generateStrings(std::vector<std::string> & data, int string_length);
+std::string doMagicShit(std::string input_string);
 
 int main() {
     //Ukol1
@@ -23,7 +27,47 @@ int main() {
     }
     std::cout << std::endl;
 
+    std::cout << "BOOM0" << std::endl;
+
+    int shmid;
+    char** shmp;
+    int shmkey = getuid();
+    size_t length = data.size();
+
+    shmid = shmget(shmkey, pow(32, STRING_LENGTH) * sizeof(char) * (STRING_LENGTH + 2), 0644|IPC_CREAT);
+    shmp = (char**)shmat(shmid, NULL, 0);
+
+    std::cout << "BOOM1" << std::endl;
+
+    for (size_t i = 0; i < length; i++) {
+        std::cout << data[i] << std::endl;
+        strcpy(shmp[i], data[i].c_str());
+    }
+
+    std::cout << "BOOM2" << std::endl;
+
+    /*for (size_t i = 0; i < length; i++) {
+        shmp[i] = doMagicShit(shmp[i]);
+    }*/
+
+    for (size_t i = 0; i < length; i++) {
+        std::cout << shmp[i] << " ";
+    }
+    std::cout << std::endl;
+
+    shmctl(shmid, IPC_RMID, 0);
+
     return 0;
+}
+
+std::string doMagicShit(std::string input_string) {
+    std::string temp = "";
+
+    for (char i: input_string) {
+        temp = temp + char(i + 1);
+    }
+
+    return temp;
 }
 
 //Ukol1
