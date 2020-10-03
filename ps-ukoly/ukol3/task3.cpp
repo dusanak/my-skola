@@ -1,21 +1,19 @@
 #include <iostream>
 #include <vector>
-#include <cstdlib>
-#include <cstring>
-#include <cmath>
 #include <unistd.h> 
 #include <sys/wait.h>
-#include <sys/shm.h>
-#include <openssl/evp.h>
+//#include <openssl/evp.h>
 
 #define STRING_LENGTH 2
-#define NUMBER_OF_PROCESSES 8
+#define NUMBER_OF_PROCESSES 3
 
 //todo https://www.openssl.org/docs/man1.0.2/man3/EVP_DigestInit.html
 //https://www.openssl.org/docs/man1.0.2/man3/md5.html
 
 void generateStrings(std::vector<std::string> & data, int string_length);
-std::string doMagicShit(std::string input_string);
+std::string convertStringToMD5(std::string input_string);
+void convertToMD5Sequential(std::vector<std::string> & data);
+void convertToMD5Parallel(std::vector<std::string> & data);
 
 int main() {
     //Ukol1
@@ -27,47 +25,14 @@ int main() {
     }
     std::cout << std::endl;
 
-    std::cout << "BOOM0" << std::endl;
-
-    int shmid;
-    char** shmp;
-    int shmkey = getuid();
-    size_t length = data.size();
-
-    shmid = shmget(shmkey, pow(32, STRING_LENGTH) * sizeof(char) * (STRING_LENGTH + 2), 0644|IPC_CREAT);
-    shmp = (char**)shmat(shmid, NULL, 0);
-
-    std::cout << "BOOM1" << std::endl;
-
-    for (size_t i = 0; i < length; i++) {
-        std::cout << data[i] << std::endl;
-        strcpy(shmp[i], data[i].c_str());
-    }
-
-    std::cout << "BOOM2" << std::endl;
-
-    /*for (size_t i = 0; i < length; i++) {
-        shmp[i] = doMagicShit(shmp[i]);
-    }*/
-
-    for (size_t i = 0; i < length; i++) {
-        std::cout << shmp[i] << " ";
-    }
     std::cout << std::endl;
+    convertToMD5Sequential(data);
 
-    shmctl(shmid, IPC_RMID, 0);
+    //Ukol2
+    std::cout << std::endl;
+    convertToMD5Parallel(data);
 
     return 0;
-}
-
-std::string doMagicShit(std::string input_string) {
-    std::string temp = "";
-
-    for (char i: input_string) {
-        temp = temp + char(i + 1);
-    }
-
-    return temp;
 }
 
 //Ukol1
@@ -94,6 +59,24 @@ void generateStrings(std::vector<std::string> & data, int string_length) {
     }
 }
 
+//TODO useMD5
+std::string convertStringToMD5(std::string input_string) {
+    std::string temp = "";
+
+    for (char i: input_string) {
+        temp = temp + char(i + 1);
+    }
+
+    return temp;
+}
+
+void convertToMD5Sequential(std::vector<std::string> & data) {
+    for (size_t i = 0; i < data.size(); i++) {
+        std::cout << convertStringToMD5(data[i]) << " ";
+    }
+    std::cout << std::endl;
+}
+
 //Ukol2
 //Předchozí program upravte tak, aby si vstupní sadu řetězců rozdělil na N částí. 
 //Přičemž každou část bude zpracovávat jeden proces. Tedy příklad. 
@@ -101,3 +84,20 @@ void generateStrings(std::vector<std::string> & data, int string_length) {
 //přičemž první proces bude počítat md5 hashe pro řetězce “aaa”,“aab” až “azz”, 
 //druhý proces bude řešit “baa”,“bab” až “baz” a tak dále až poslední proces bude řešit řetězce “zaa”,“zab” až “zzz” . 
 //Program opět koncipujte tak, aby bylo bylo možné jako parametr zadat délku řetězce a počet procesů, které budou v rámci běhu programu vytvořeny. (8 bodů)
+void convertToMD5Parallel(std::vector<std::string> & data) {
+    size_t size_of_block = data.size() / NUMBER_OF_PROCESSES;
+
+    for (int i = 0; i < NUMBER_OF_PROCESSES; i++) {
+        int pid = fork();
+        if (pid == 0) {
+            for (size_t j = i * size_of_block; j < (i + 1) * size_of_block; j++) {
+                std::cout << convertStringToMD5(data[j]) << " ";
+            }
+            std::cout << std::endl;
+
+            exit(0);
+        }
+    }
+
+    while (waitpid(-1, NULL, 0) > 0) {}
+}
