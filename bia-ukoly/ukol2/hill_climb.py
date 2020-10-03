@@ -7,7 +7,7 @@ import random
 import time
 
 def main():
-    hill_climb_visualised(2, -32.768, 32.768, 20)
+    hill_climb_visualised(2, -5.12, 5.12, 20)
 
 def sphere_visualised(dimension):
     data = plot_generator(sphere, dimension, generate_input(dimension, -5.12, 5.12, 0.01))
@@ -72,18 +72,18 @@ def plot_generator(foo, dimension, input_data):
     return data_mesh
 
 def hill_climb_visualised(dimension, min, max, tries):
-    best_case = [i for i in range(dimension)]
+    best_case = [random.uniform(min, max) for i in range(dimension)]
     best_case.append(float("inf"))
     
     fig = plt.figure()
-    data = ackley_visualised(2)
+    data = sphere_visualised(2)
     ax = fig.gca(projection='3d')
 
     plt.ion()
     plt.show()
 
     for _ in range(tries):
-        current_best_case = hill_climb(ackley, dimension, min, max, best_case)
+        current_best_case = hill_climb(sphere, dimension, min, max, best_case)
 
         if (current_best_case[dimension] < best_case[dimension]):
             best_case = current_best_case
@@ -101,11 +101,9 @@ def hill_climb_visualised(dimension, min, max, tries):
 
     return best_case
 
-def hill_climb(foo, dimension, min, max, current_best_case):
-    best_case = [i for i in range(dimension)]
-    best_case.append(float("inf"))
-
-    max_distance = 10
+def hill_climb(foo, dimension, min, max, best_case):
+    max_distance = 5
+    current_best_case = [i for i in best_case]
 
     for _ in range(10):
             vector = []
@@ -114,9 +112,9 @@ def hill_climb(foo, dimension, min, max, current_best_case):
                 min_val = best_case[i] - max_distance
                 max_val = best_case[i] + max_distance
 
+                #abychom zustali v rozsahu souradnic
                 if (min_val < min):
                     min_val = min
-
                 if (max_val > max):
                     max_val = max
 
@@ -124,13 +122,13 @@ def hill_climb(foo, dimension, min, max, current_best_case):
             
             result = foo(vector)
 
-            if (result < best_case[dimension]):
+            if (result < current_best_case[dimension]):
                 vector.append(result)
                 
                 for index, value in enumerate(vector):
-                    best_case[index] = value
+                    current_best_case[index] = value
 
-    return best_case
+    return current_best_case
 
 
 if __name__ == "__main__":
