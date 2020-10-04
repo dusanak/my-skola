@@ -63,7 +63,7 @@ bubble (x1:x2:xs) | x1 > x2 = x2:(bubble (x1:xs))
 isSorted :: [Int] -> Bool
 isSorted [] = True
 isSorted [x] = True
-isSorted (x1:x2:xs) | x1 < x2 = isSorted (x2:xs)
+isSorted (x1:x2:xs) | x1 <= x2 = isSorted (x2:xs)
                     | x2 < x1 = False
 
 bubbleSort :: [Int] -> [Int]
