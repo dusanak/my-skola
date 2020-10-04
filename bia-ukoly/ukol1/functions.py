@@ -51,7 +51,6 @@ def zakharov_visualised(dimension):
 
 def ackley_visualised(dimension):
     data = plot_generator(ackley, dimension, generate_input(dimension, -32.768, 32.768, 0.1))
-
     return data 
 
 def sphere(input_vector):
