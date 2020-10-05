@@ -113,16 +113,15 @@ def hill_climb(foo, dimension, min, max, best_case, max_distance):
             vector = []
             
             for i in range(dimension):
-                min_val = best_case[i] - max_distance
-                max_val = best_case[i] + max_distance
+                val = random.gauss(best_case[i], 1)
 
                 #abychom zustali v rozsahu souradnic
-                if (min_val < min):
-                    min_val = min
-                if (max_val > max):
-                    max_val = max
+                if (val < min):
+                    val = min
+                if (val > max):
+                    val = max
 
-                vector.append(random.uniform(min_val, max_val))
+                vector.append(val)
             
             result = foo(vector)
 
