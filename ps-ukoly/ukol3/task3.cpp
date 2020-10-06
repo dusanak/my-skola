@@ -1,14 +1,12 @@
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <unistd.h> 
 #include <sys/wait.h>
-//#include <openssl/evp.h>
+#include <openssl/evp.h>
 
 #define STRING_LENGTH 2
-#define NUMBER_OF_PROCESSES 3
-
-//todo https://www.openssl.org/docs/man1.0.2/man3/EVP_DigestInit.html
-//https://www.openssl.org/docs/man1.0.2/man3/md5.html
+#define NUMBER_OF_PROCESSES 32
 
 void generateStrings(std::vector<std::string> & data, int string_length);
 std::string convertStringToMD5(std::string input_string);
@@ -59,15 +57,24 @@ void generateStrings(std::vector<std::string> & data, int string_length) {
     }
 }
 
-//TODO useMD5
 std::string convertStringToMD5(std::string input_string) {
-    std::string temp = "";
+    unsigned char md_value[EVP_MAX_MD_SIZE];
+    unsigned int md_length;
 
-    for (char i: input_string) {
-        temp = temp + char(i + 1);
+    EVP_MD_CTX * mdctx = EVP_MD_CTX_create();
+    EVP_DigestInit(mdctx, EVP_md5());
+    EVP_DigestUpdate(mdctx, input_string.c_str(), input_string.length());
+    EVP_DigestFinal(mdctx, md_value, &md_length);
+    EVP_MD_CTX_destroy(mdctx);
+
+    //převod z unsigned char * na std::string
+    std::stringstream ss;
+    ss << std::hex << std::setfill('0');
+    for (size_t i = 0; i < md_length; i++) {
+        ss << std::setw(2) << (unsigned int)md_value[i];
     }
 
-    return temp;
+    return ss.str();
 }
 
 void convertToMD5Sequential(std::vector<std::string> & data) {
