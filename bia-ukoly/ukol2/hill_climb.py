@@ -90,7 +90,7 @@ def hill_climb_visualised(foo, dimension, min, max, max_distance, tries):
     for _ in range(tries):
         ax.clear()
         ax.plot_surface(data[0], data[1], data[2], alpha = 0.25, cmap=cm.get_cmap("inferno"))
-        ax.plot(*best_case, 'bo')
+        ax.scatter(*best_case, 'bo')
         
         print(best_case[dimension])
 
