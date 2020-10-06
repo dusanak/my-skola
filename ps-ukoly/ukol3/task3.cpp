@@ -5,15 +5,27 @@
 #include <sys/wait.h>
 #include <openssl/evp.h>
 
-#define STRING_LENGTH 2
-#define NUMBER_OF_PROCESSES 32
+#define DEFAULT_STRING_LENGTH 2
+#define DEFAULT_NUMBER_OF_PROCESSES 32
 
 void generateStrings(std::vector<std::string> & data, int string_length);
 std::string convertStringToMD5(std::string input_string);
 void convertToMD5Sequential(std::vector<std::string> & data);
 void convertToMD5Parallel(std::vector<std::string> & data);
 
-int main() {
+int STRING_LENGTH, NUMBER_OF_PROCESSES;
+
+int main(int argc, char *argv[]) {
+    if (argc == 3) {
+        STRING_LENGTH = std::atoi(argv[1]);
+        NUMBER_OF_PROCESSES = std::atoi(argv[2]);
+    } else {
+        STRING_LENGTH = DEFAULT_STRING_LENGTH;
+        NUMBER_OF_PROCESSES = DEFAULT_NUMBER_OF_PROCESSES;
+    }
+
+    std::cout << "String length: " << STRING_LENGTH << "\n" << "Number of processes: " << NUMBER_OF_PROCESSES << "\n" << std::endl;
+    
     //Ukol1
     std::vector<std::string> data = std::vector<std::string>();
     generateStrings(data, STRING_LENGTH);
@@ -21,9 +33,8 @@ int main() {
     for (std::string i: data) {
         std::cout << i << " ";
     }
-    std::cout << std::endl;
+    std::cout << "\n" << std::endl;
 
-    std::cout << std::endl;
     convertToMD5Sequential(data);
 
     //Ukol2
