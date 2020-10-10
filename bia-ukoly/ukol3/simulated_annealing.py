@@ -84,9 +84,9 @@ def simulated_annealing(foo, dimension, min, max):
     plt.ion()
     plt.show()
 
-    T_0 = 100
+    T_0 = 100.0
     T_min = 0.5
-    alpha = 0.05
+    alpha = 0.95
 
     T = T_0
 
@@ -99,7 +99,7 @@ def simulated_annealing(foo, dimension, min, max):
         ax.plot_surface(data[0], data[1], data[2], alpha = 0.25, cmap=cm.get_cmap("inferno"))
         ax.scatter(*best_case, 'bo')
         plt.draw()
-        plt.pause(2)
+        plt.pause(0.5)
 
         solution = []  
         for i in range(dimension):
