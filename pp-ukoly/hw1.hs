@@ -9,9 +9,9 @@ flipH (row:rows) = (flipH rows) ++ [row]
 
 generateRow::Int -> Char -> String
 generateRow 0 _ = "" 
-generateRow 1 '.' = "|"
-generateRow x '.' = '.' : (generateRow (x - 1) '.')
-generateRow x '|' = '|' : (generateRow (x - 1) '.')
+generateRow 1 ' ' = "|"
+generateRow x ' ' = ' ' : (generateRow (x - 1) ' ')
+generateRow x '|' = '|' : (generateRow (x - 1) ' ')
 generateRow x '-' = '-' : (generateRow (x - 1) '-')
 
 generateMap::(Int,Int) -> Bool -> Result
