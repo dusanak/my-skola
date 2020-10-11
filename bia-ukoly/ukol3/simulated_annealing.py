@@ -13,7 +13,7 @@ def main():
         "ackley": (ackley, 2, -32.768, 32.768)
     }
 
-    simulated_annealing(*options["sphere"])
+    simulated_annealing(*options["michalewicz"])
 
 def sphere(input_vector):
     result = 0
@@ -87,40 +87,44 @@ def simulated_annealing(foo, dimension, min, max):
     T_0 = 100.0
     T_min = 0.5
     alpha = 0.95
+    n_T = 3
 
     T = T_0
 
     best_case = [random.uniform(min, max) for i in range(dimension)]
     best_case.append(foo(best_case))
+    
     while T > T_min:
-        print(best_case[dimension])
+        for _ in range(n_T):
+            print(best_case[dimension])
 
-        ax.clear()
-        ax.plot_surface(data[0], data[1], data[2], alpha = 0.25, cmap=cm.get_cmap("inferno"))
-        ax.scatter(*best_case, 'bo')
-        plt.draw()
-        plt.pause(0.5)
+            ax.clear()
+            ax.plot_surface(data[0], data[1], data[2], alpha = 0.25, cmap=cm.get_cmap("inferno"))
+            ax.scatter(*best_case, 'bo')
+            plt.draw()
+            plt.pause(0.1)
 
-        solution = []  
-        for i in range(dimension):
-            val = random.gauss(best_case[i], 1)
+            solution = []  
+            for i in range(dimension):
+                val = random.gauss(best_case[i], 1)
 
-            #abychom zustali v rozsahu souradnic
-            if (val < min):
-                val = min
-            if (val > max):
-                val = max
+                #abychom zustali v rozsahu souradnic
+                if (val < min):
+                    val = min
+                if (val > max):
+                    val = max
 
-            solution.append(val)
-        solution.append(foo(solution))
+                solution.append(val)
+            solution.append(foo(solution))
 
-        if solution[dimension] < best_case[dimension]:
-            best_case = solution
-        else:
-            r = random.uniform(0, 1)
-
-            if r < math.pow(math.e, (-(solution[dimension] - best_case[dimension]))/T):
+            if solution[dimension] < best_case[dimension]:
                 best_case = solution
+            else:
+                r = random.uniform(0, 1)
+                probability = math.pow(math.e, (-(solution[dimension] - best_case[dimension])) / T)
+
+                if r < probability:
+                    best_case = solution
         T *= alpha
         
     plt.pause(10)
