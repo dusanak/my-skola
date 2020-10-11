@@ -3,9 +3,9 @@ type Result = [String]
 pp :: Result -> IO ()
 pp x = putStr (concat (map (++"\n") x))
 
-flipH :: Result -> Result
-flipH [row] = [row]
-flipH (row:rows) = (flipH rows) ++ [row] 
+flipV :: Result -> Result
+flipV [row] = [row]
+flipV (row:rows) = (flipV rows) ++ [row] 
 
 generateRow::Int -> Char -> String
 generateRow 0 _ = "" 
@@ -33,4 +33,4 @@ tickTackGame gamemap (step:steps) 'x' = tickTackGame (changeRow gamemap step 'x'
 tickTackGame gamemap (step:steps) 'o' = tickTackGame (changeRow gamemap step 'o') steps 'x'
 
 ticktack::(Int,Int) -> [(Int,Int)] -> Result
-ticktack size steps = flipH (tickTackGame (generateMap size True) steps 'x')
+ticktack size steps = flipV (tickTackGame (generateMap size True) steps 'x')
