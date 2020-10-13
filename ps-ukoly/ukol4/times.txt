@@ -1,0 +1,126 @@
+thread 1
+
+real	0m0,003s
+user	0m0,003s
+sys	0m0,000s
+
+real	0m0,006s
+user	0m0,006s
+sys	0m0,000s
+
+real	0m0,062s
+user	0m0,062s
+sys	0m0,000s
+
+real	0m1,327s
+user	0m1,310s
+sys	0m0,016s
+
+real	0m35,107s
+user	0m34,898s
+sys	0m0,200s
+
+Zabit (SIGKILL)
+
+real	0m32,695s
+user	0m28,505s
+sys	0m3,874s
+
+thread 2
+
+real	0m0,003s
+user	0m0,003s
+sys	0m0,000s
+
+real	0m0,006s
+user	0m0,007s
+sys	0m0,000s
+
+real	0m0,051s
+user	0m0,065s
+sys	0m0,004s
+
+real	0m1,035s
+user	0m1,350s
+sys	0m0,008s
+
+real	0m26,811s
+user	0m34,815s
+sys	0m0,240s
+Zabit (SIGKILL)
+
+real	0m32,438s
+user	0m28,594s
+sys	0m3,569s
+
+thread 3
+
+real	0m0,009s
+user	0m0,002s
+sys	0m0,003s
+
+real	0m0,005s
+user	0m0,007s
+sys	0m0,000s
+
+real	0m0,048s
+user	0m0,067s
+sys	0m0,007s
+
+real	0m0,927s
+user	0m1,346s
+sys	0m0,016s
+
+real	0m25,062s
+user	0m36,152s
+sys	0m0,272s
+Zabit (SIGKILL)
+
+real	0m32,836s
+user	0m28,725s
+sys	0m3,991s
+
+thread 4
+
+real	0m0,009s
+user	0m0,002s
+sys	0m0,004s
+
+real	0m0,006s
+user	0m0,005s
+sys	0m0,003s
+
+real	0m0,047s
+user	0m0,066s
+sys	0m0,014s
+
+real	0m0,910s
+user	0m1,403s
+sys	0m0,004s
+
+real	0m23,522s
+user	0m36,257s
+sys	0m0,264s
+
+
+thread 5
+
+real	0m0,003s
+user	0m0,004s
+sys	0m0,001s
+
+real	0m0,005s
+user	0m0,008s
+sys	0m0,000s
+
+real	0m0,049s
+user	0m0,090s
+sys	0m0,000s
+
+real	0m0,894s
+user	0m1,470s
+sys	0m0,004s
+
+real	0m22,342s
+user	0m36,164s
+sys	0m0,232s
