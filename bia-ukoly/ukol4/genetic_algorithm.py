@@ -9,33 +9,30 @@ import time
 def main():
     genetic_algorithm(2, 0, 1000)
 
-
-def generate_individual(dimension, min, max):
-    pass
-
 def genetic_algorithm(dimension, min, max):
     fig = plt.figure()
     ax = fig.gca()
     plt.ion()
     plt.show()
 
-    NP = 20
-    G = 200
-    D = 40  # In TSP, it will be a number of cities
+    population_size = 20
+    generations = 1000
+    number_of_cities = 20  # In TSP, it will be a number of cities
 
-    cities = [tuple(random.randint(min, max) for i in range(dimension)) for j in range(D)]
+    cities = [tuple(random.randint(min, max) for i in range(dimension)) for j in range(number_of_cities)]
 
-    population = [Path().generate_random_path(cities) for i in range(NP)]
+    population = [Path().generate_random_path(cities) for i in range(population_size)]
     new_population = population.copy()
 
-    for i in range(G):
+    for i in range(generations):
         best_case = population[0]
-        for i in population:
-            if i.length() < best_case.length():
-                best_case = i
+
+        for j in population:
+            if j.length() < best_case.length():
+                best_case = j
 
         ax.clear()
-        print(best_case.length())
+        print("Gen", i, ":", best_case.length())
         ax.scatter(np.array(cities)[:, 0], np.array(cities)[:, 1], c='b')
         ax.plot(np.array(best_case.path)[:, 0], np.array(best_case.path)[:, 1], c='r')
         plt.draw()
@@ -43,10 +40,7 @@ def genetic_algorithm(dimension, min, max):
 
         for index, value in enumerate(population):
             parent_A = value
-            parent_B = population[random.randint(0, NP - 1)]
-            
-            while parent_B == parent_A:
-                parent_B = population[random.randint(0, NP - 1)]
+            parent_B = random.choice([i for i in population if i != parent_A])
 
             offspring_AB = Path.crossover(parent_A, parent_B)
             offspring_AB.mutate()
@@ -71,11 +65,8 @@ class Path:
         self.path = []
 
     def generate_random_path(self, cities):
-        random_order = list(range(len(cities)))
-        
-        while len(random_order) > 0:
-            random_city = cities[random_order.pop(random.randint(0, len(random_order) - 1))]
-            self.path.append(random_city)
+        self.path = cities.copy()
+        random.shuffle(self.path)         
         
         return self
 
@@ -98,9 +89,9 @@ class Path:
             while posA == posB:
                 posB = random.randint(0, len(self.path) - 1)
 
-            temp = posA
-            posA = posB
-            posB = temp
+            temp = self.path[posA]
+            self.path[posA] = self.path[posB]
+            self.path[posB] = temp
         
         return self
                 
