@@ -13,14 +13,14 @@ def genetic_travelling_salesman(dimension, min, max):
     chart = Chart()
 
     population_size = 20
-    generations = 1000
+    generations = 100
     number_of_cities = 20
 
     cities = [tuple(random.randint(min, max) for i in range(dimension)) for j in range(number_of_cities)]
 
     population = [Path().generate_random_path(cities) for i in range(population_size)]
     new_population = population.copy()
-    
+
     best_case = population[0]
 
     for i in range(generations):
