@@ -8,7 +8,7 @@ import os
 os.system("{ ./speed_comparison/$exec $len $thr; } 1>/dev/null")
 """)
 
-    executable = "task5"
+    executable = "task5_nomd5"
     length = 6
     threads = 12
 
