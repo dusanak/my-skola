@@ -1,0 +1,60 @@
+Name: task3_original
+Znaky: 6
+---------------------------
+FORKS        TIME
+12           32.747355
+
+Name: task3_onlypara
+Znaky: 6
+---------------------------
+FORKS        TIME
+12           31.015505
+
+Name: task5_numbertostring
+Znaky: 6
+---------------------------
+FORKS        TIME
+12           64.746188
+
+Name: task5_stringincrement
+Znaky: 6
+---------------------------
+FORKS        TIME
+12           64.118135
+
+Name: task3_original
+Znaky: 5
+---------------------------
+FORKS        TIME
+12           21.331282
+
+Name: task3_onlypara
+Znaky: 5
+---------------------------
+FORKS        TIME
+12           4.150894
+
+Name: task5_numbertostring
+Znaky: 5
+---------------------------
+FORKS        TIME
+12           2.738074
+
+Name: task5_stringincrement
+Znaky: 5
+---------------------------
+FORKS        TIME
+12           2.597848
+
+Name: task5
+Znaky: 5
+---------------------------
+FORKS        TIME
+12           2.332335
+
+Name: task5
+Znaky: 6
+---------------------------
+FORKS        TIME
+12           65.598553
+
