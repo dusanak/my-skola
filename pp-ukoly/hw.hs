@@ -35,9 +35,6 @@ tickTackGame gamemap (step:steps) 'o' = tickTackGame (changeRow gamemap step 'o'
 ticktack::(Int,Int) -> [(Int,Int)] -> Result
 ticktack size steps = flipV (tickTackGame (generateMap size True) steps 'x')
 
-winner::(Int,Int) -> [(Int,Int)] -> Bool
-winner (x, y) steps = checkMap (ticktack (x, y) steps) (x + 2, y + 2)
-
 getLetter::[String] -> (Int, Int) -> Char
 getLetter ((letter:_):_) (0, 0) = letter
 getLetter ((_:row):rows) (0, y) = getLetter (row:rows) (0, y - 1)
@@ -81,3 +78,10 @@ checkMinorDiagonal _ _ _ 0 = True
 checkMinorDiagonal gamemap player (x, y) count | letter == player = checkMinorDiagonal gamemap player (x - 1, y + 1) (count - 1)
                                                | otherwise = False
                                                where letter = getLetter gamemap (x, y)
+
+winner::(Int,Int) -> [(Int,Int)] -> Bool
+winner (x, y) steps = checkMap (ticktack (x, y) steps) (x + 1, y + 1)
+
+-- (8, 8) [(1, 1), (2, 1), (1, 2), (2, 2), (1, 3), (2, 3), (1, 4)]
+-- (8, 8) [(1, 1), (2, 1), (1, 2), (2, 2), (1, 3), (2, 3), (1, 5)]
+-- (8, 8) [(1, 1), (2, 1), (2, 2), (1, 2), (3, 3), (2, 3), (4, 4)]
