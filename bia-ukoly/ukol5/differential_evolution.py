@@ -10,7 +10,8 @@ def main():
     options = {
         "sphere": (sphere, 2, -5.12, 5.12),
         "michalewicz": (michalewicz, 2, 0, 5),
-        "ackley": (ackley, 2, -32.768, 32.768)
+        "ackley": (ackley, 2, -32.768, 32.768),
+        "zakharov": (zakharov, 2, -10, 10)
     }
     differential_evolution(*options["ackley"])
 
@@ -51,6 +52,21 @@ def ackley(input_vector):
 
     return result
 
+def zakharov(input_vector):
+    result = 0
+
+    for i in input_vector:
+        result += i**2
+
+    temp = 0
+    for i, value in enumerate(input_vector):
+        temp += 0.5 * (i + 1) * value
+    
+    result += temp**2
+    result += temp**4
+
+    return result
+
 def differential_evolution(foo, dimension, min, max):
     chart = Chart(foo, dimension, min, max)
 
@@ -85,7 +101,7 @@ def differential_evolution(foo, dimension, min, max):
             i_rnd = random.uniform(min, max)
 
             for i in range(dimension):
-                if random.uniform(0, 1) < CR or i == i_rnd:
+                if (random.uniform(0, 1) < CR) or (i == i_rnd):
                     u[i] = v[i]
                 else:
                     u[i] = value[i]
