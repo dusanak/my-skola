@@ -82,6 +82,7 @@ checkMinorDiagonal gamemap player (x, y) count | letter == player = checkMinorDi
 winner::(Int,Int) -> [(Int,Int)] -> Bool
 winner (x, y) steps = checkMap (ticktack (x, y) steps) (x + 1, y + 1)
 
+-- Test cases
 -- (8, 8) [(1, 1), (2, 1), (1, 2), (2, 2), (1, 3), (2, 3), (1, 4)]
 -- (8, 8) [(1, 1), (2, 1), (1, 2), (2, 2), (1, 3), (2, 3), (1, 5)]
 -- (8, 8) [(1, 1), (2, 1), (2, 2), (1, 2), (3, 3), (2, 3), (4, 4)]
