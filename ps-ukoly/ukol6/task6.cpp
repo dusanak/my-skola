@@ -5,7 +5,8 @@
 #include <math.h>
 #include <string.h>
 
-// Bylo treba upravit puvodni implementaci, ktera vyuzivala knihovny openSSL pro generaci MD5 pro 
+// Bylo treba upravit puvodni implementaci ktera vyuzivala knihovny OpenSSL pro prevod retezce do MD5.
+// Cluster Mosix nema podporu systemoveho volani prlimit64() ktere zrejme OpenSSL nekde vyuziva.
 
 // leftrotate function definition
 #define LEFTROTATE(x, c) (((x) << (c)) | ((x) >> (32 - (c))))
