@@ -82,7 +82,7 @@ def differential_evolution(foo, dimension, min, max):
     g_best = population[0].position
     for particle in population:
         if foo(particle.p_best) < foo(g_best):
-            g_best = particle.p_best
+            g_best = tuple(particle.p_best)
 
     for i in range(generations):
         chart.draw(population)
@@ -94,10 +94,10 @@ def differential_evolution(foo, dimension, min, max):
             particle.newPosition(min, max)
 
             if foo(particle.position) < foo(particle.p_best):
-                particle.p_best = particle.position
+                particle.p_best = tuple(particle.position)
 
                 if foo(particle.p_best) < foo(g_best):
-                    g_best = particle.p_best
+                    g_best = tuple(particle.p_best)
         
     plt.pause(10)
 
@@ -155,7 +155,7 @@ class Particle:
     def generateRandom(self, dimension, min, max, v_min, v_max):
         self.position = [random.uniform(min, max) for i in range(dimension)]
         self.velocity = [random.uniform(v_min, v_max) for i in range(dimension)]
-        self.p_best = self.position
+        self.p_best = tuple(self.position)
 
         return self 
 
