@@ -13,7 +13,7 @@ def main():
         "ackley": (ackley, 2, -32.768, 32.768),
         "zakharov": (zakharov, 2, -10, 10)
     }
-    differential_evolution(*options["sphere"])
+    differential_evolution(*options["ackley"])
 
 def sphere(input_vector):
     result = 0
@@ -73,7 +73,7 @@ def differential_evolution(foo, dimension, min, max):
     population_size = 15
     generations = 50
 
-    v_min, v_max = -1.0, 1.0
+    v_min, v_max = min / 10.0, max / 10.0
     c1, c2 = 2.0, 2.0
     w_s, w_e = 0.9, 0.4
 
