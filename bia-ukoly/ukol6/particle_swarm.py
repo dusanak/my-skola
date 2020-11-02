@@ -13,7 +13,7 @@ def main():
         "ackley": (ackley, 2, -32.768, 32.768),
         "zakharov": (zakharov, 2, -10, 10)
     }
-    differential_evolution(*options["ackley"])
+    particle_swarm(*options["ackley"])
 
 def sphere(input_vector):
     result = 0
@@ -67,7 +67,7 @@ def zakharov(input_vector):
 
     return result
 
-def differential_evolution(foo, dimension, min, max):
+def particle_swarm(foo, dimension, min, max):
     chart = Chart(foo, dimension, min, max)
 
     population_size = 15
