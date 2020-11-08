@@ -13,7 +13,7 @@ def main():
         "ackley": (ackley, 2, -32.768, 32.768),
         "zakharov": (zakharov, 2, -10, 10)
     }
-    som_algorithm(*options["sphere"])
+    som_algorithm(*options["ackley"])
 
 def sphere(input_vector):
     result = 0
@@ -70,13 +70,13 @@ def zakharov(input_vector):
 def som_algorithm(foo, dimension, min, max):
     chart = Chart(foo, dimension, min, max)
 
-    population_size = 15
-    migrations = 50
+    population_size = 10
+    migrations = 10
 
     path_length = 5
-    step = 1
+    step = 0.2
     PRT = 0.5
-    min_div = 1
+    min_div = 0.1
 
     population = [tuple(random.uniform(min, max) for _ in range(dimension)) for _ in range(population_size)]
 
@@ -97,10 +97,9 @@ def som_algorithm(foo, dimension, min, max):
         else:
             break
 
-
         for i in population:
             path = [i]
-            for t in range(0, path_length, step):
+            for t in np.arange(0, path_length + step, step):
                 prt_vector = [1 if random.uniform(0, 1) < PRT else 0 for __ in range(dimension)]
                 
                 new_position = []
@@ -110,9 +109,7 @@ def som_algorithm(foo, dimension, min, max):
                     x = x if x > min else min
                     new_position.append(x)
 
-                new_position = tuple(new_position)
-
-                path.append(new_position)
+                path.append(tuple(new_position))
 
             best_individual = path[0]
             for j in path:
