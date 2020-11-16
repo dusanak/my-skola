@@ -11,7 +11,7 @@ from itertools import chain
 #Modify chart, finish the algorithm itself.
 
 def main():
-    ant_colony_travelling_salesman(2, 0, 1000)
+    ant_colony_travelling_salesman(2, 0, 100)
 
 def ant_colony_travelling_salesman(dimension, min, max):
     chart = Chart()
@@ -25,32 +25,45 @@ def ant_colony_travelling_salesman(dimension, min, max):
 
     cities = [tuple(random.randint(min, max) for i in range(dimension)) for j in range(number_of_cities)]
     world = World(cities, evaporation_ratio)
-    best_path = world.getBestPath()
+    best_path = cities + [cities[-1]]
 
     for _ in range(generations):
         population = [Ant(random.choice(world.cities), alpha, beta) for i in range(population_size)]
 
         for ant in population:
             ant.findPath(world)
+
+            if world.pathLength(ant.path) < world.pathLength(best_path):
+                best_path = ant.path.copy()
+
+            chart.draw(current_path_length = world.pathLength(ant.path),
+                       current_path = ant.path,
+                       best_path_length = world.pathLength(best_path),
+                       best_path = best_path)
         
         world.updateAllPheromones([i.path for i in population])
-        best_path = world.getBestPath
+
+    plt.pause(10)
 
 class Ant:
     def __init__(self, starting_position, alpha, beta):
-        self.path = [] #TODO
+        self.path = [starting_position]
         self.alpha = alpha
         self.beta = beta
 
-    def nextPathSegment(self, world):
-        path_segments = world.pathSegmentsFromCity(self.path[-1][1])
+    def nextPathCity(self, world):
+        path_segments = world.pathSegmentsFromCity(self.path[-1])
+        random.shuffle(path_segments)
         probabilities = []
 
+        #odfiltrovani hran spojujici dve mesta ktera uz v ceste jsou
+        filtered_path_segments = list(filter((lambda x: not ((x[0] in self.path) and (x[1] in self.path))), path_segments))
+
         magic_sum = 0
-        for i in path_segments:
+        for i in filtered_path_segments:
             magic_sum += world.path_segments[i]**self.alpha + (1 / world.pathSegmentLength(i))**self.beta
 
-        for i in path_segments:
+        for i in filtered_path_segments:
             probability = (world.path_segments[i]**self.alpha + (1 / world.pathSegmentLength(i))**self.beta) / magic_sum
             probabilities.append(probability)
 
@@ -60,18 +73,15 @@ class Ant:
         distribution_function[-1] = 1.0
 
         random_number = random.uniform(0.0, 1.0)
-        for i in distribution_function[::-1]:
-            if random_number < i:
-                return i
+        for index, value in enumerate(distribution_function[::-1]):
+            if random_number < value:
+                return filtered_path_segments[index][0] if filtered_path_segments[index][0] != self.path[-1] else filtered_path_segments[index][1]
 
     def findPath(self, world):
-        while len(self.path) + 1 < len(world.cities):
-            self.path.append(self.nextPathSegment(world))
+        while len(self.path) < len(world.cities):
+            self.path.append(self.nextPathCity(world))
 
-        if self.path[-1][0] in self.path[-2]:
-            self.path.append((self.path[-1][1], self.path[0][0]))      
-        if self.path[-1][1] in self.path[-2]:
-            self.path.append((self.path[-1][1], self.path[0][0])) 
+        self.path.append(self.path[0])
 
 class World:
     def __init__(self, cities, evaporation_ratio):
@@ -87,15 +97,34 @@ class World:
                 self.path_segments[(value, j)] = 1.0
 
     def updateAllPheromones(self, paths):
-        for key, _ in self.path_segments:
-            self.pheromoneConversion(key, [i for i in paths if key in i])
+        for path_segment in self.path_segments.keys():
+            paths_containing_segment = []
+            for path in paths:
+                for index, value in enumerate(path[1:]):
+                    if (value == path_segment[0]) or (value == path_segment[1]):
+                        if (path[index - 1] == path_segment[0]) or (path[index - 1] == path_segment[1]):
+                            paths_containing_segment.append(path)
+                            break
+            self.pheromoneConversion(path_segment, paths_containing_segment)
 
     def pheromoneConversion(self, path_segment, paths):
         deposited_pheromone = 0
         for i in paths:
             deposited_pheromone += 1.0 / self.pathLength(i)
-        self.path_segments[path_segment] = ((self.evaporation_ratio * self.path_segments[path_segment]) +
-                                            (deposited_pheromone if path_segment in chain.from_iterable(paths) else 0))
+        self.path_segments[path_segment] = ((self.evaporation_ratio * self.path_segments[path_segment]) + deposited_pheromone)
+
+    def getPathSegment(self, city1, city2):
+        if (city1, city2) in self.path_segments:
+            return (city1, city2)
+        else:
+            return (city2, city1)
+
+    def pathSegmentsFromCity(self, city):
+        possible_path_segments = []
+        for key in self.path_segments:
+            if (key[0] == city) or (key[1] == city):
+                possible_path_segments.append(self.getPathSegment(key[0], key[1]))
+        return possible_path_segments
 
     def pathSegmentLength(self, path_segment):
         temp = 0
@@ -106,41 +135,10 @@ class World:
     def pathLength(self, path):
         path_length = 0
 
-        for i in path:
-            path_length += self.pathSegmentLength(path[i])
+        for i in range(len(path[1:])):
+            path_length += self.pathSegmentLength(self.getPathSegment(path[i - 1], path[i]))
 
         return path_length
-
-    def getBestPath(self):
-        best_path = [self.cities[0]]
-        cities_not_in_path = self.cities[1:]
-
-        while len(best_path) < len(self.cities):
-            #get all edges that are incident with last city in path and do not lead to another city already in path
-            filtered_path_segments = list(
-                filter((lambda x: (x[0] in cities_not_in_path) or (x[1] in cities_not_in_path)), 
-                self.pathSegmentsFromCity(best_path[-1]))
-                )
-
-            best_path_segment = filtered_path_segments[0]
-            for i in filtered_path_segments[1:]:
-                if self.path_segments[i] < self.path_segments[best_path_segment]:
-                    best_path_segment = i
-            
-            best_path.append(best_path_segment)
-            if best_path_segment[0] in cities_not_in_path:
-                cities_not_in_path.remove(best_path_segment[0])
-            if best_path_segment[1] in cities_not_in_path:
-                cities_not_in_path.remove(best_path_segment[1])
-
-        return best_path
-            
-    def pathSegmentsFromCity(self, city):
-        possible_path_segments = []
-        for key in self.path_segments:
-            if (key[0] == city) or (key[1] == city):
-                possible_path_segments.append(key)
-        return possible_path_segments
 
 class Chart:
     def __init__(self):
@@ -150,16 +148,16 @@ class Chart:
         plt.ion()
         plt.show()
 
-    def draw(self, current_path, best_path):
+    def draw(self, current_path_length, current_path, best_path_length, best_path):
         self.ax_current.clear()
-        self.ax_current.title.set_text('{:5.5f}'.format(current_path.length))
-        self.ax_current.scatter(np.array(current_path.path)[:, 0], np.array(current_path.path)[:, 1], c='b')
-        self.ax_current.plot(np.array(current_path.path)[:, 0], np.array(current_path.path)[:, 1], c='r')
+        self.ax_current.title.set_text('{:5.5f}'.format(current_path_length))
+        self.ax_current.plot(np.array(current_path)[:, 0], np.array(current_path)[:, 1], c='r')
+        self.ax_current.scatter(np.array(current_path)[:, 0], np.array(current_path)[:, 1], c='b')
 
         self.ax_best.clear()
-        self.ax_best.title.set_text('{:5.5f}'.format(best_path.length))
-        self.ax_best.scatter(np.array(best_path.path)[:, 0], np.array(best_path.path)[:, 1], c='b')
-        self.ax_best.plot(np.array(best_path.path)[:, 0], np.array(best_path.path)[:, 1], c='r')
+        self.ax_best.title.set_text('{:5.5f}'.format(best_path_length))
+        self.ax_best.plot(np.array(best_path)[:, 0], np.array(best_path)[:, 1], c='r')
+        self.ax_best.scatter(np.array(best_path)[:, 0], np.array(best_path)[:, 1], c='b')
 
         plt.draw()
         plt.pause(0.01)
