@@ -31,9 +31,9 @@ __device__ void convertStringToMD5(uint64_t idx, int string_length) {
      md_value[12], md_value[13], md_value[14], md_value[15]);
 }
 
-__global__ void convertToMD5(int number_of_strings, int string_length) {
+__global__ void convertToMD5(uint64_t number_of_strings, int string_length) {
     //vypocitava ciselne hodnoty jednotlivych retezcu ktere jsou nasledne prepocitavany na samotne retezce
-    uint64_t idx = (blockIdx.x * blockDim.x + threadIdx.x);
+    uint64_t idx = (blockIdx.x * blockDim.x + (threadIdx.x));
 
     if (idx >= number_of_strings)
         return;
@@ -46,7 +46,7 @@ __global__ void convertToMD5(int number_of_strings, int string_length) {
 void generateMD5Cuda(int string_length, int number_of_threads) {
 	cudaError_t cerr;
 
-    int number_of_strings = (int)(pow((double)ALPHABET_SIZE, (double)string_length) + 0.5);
+    uint64_t number_of_strings = (uint64_t)(pow((double)ALPHABET_SIZE, (double)string_length) + 0.5);
 
     convertToMD5<<< (number_of_strings / number_of_threads) + 1, number_of_threads >>>(number_of_strings, string_length);
 
