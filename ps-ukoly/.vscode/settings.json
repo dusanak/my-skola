@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.cu": "cpp",
         "array": "cpp",
         "atomic": "cpp",
         "bit": "cpp",
@@ -47,6 +48,14 @@
         "cstring": "cpp",
         "cinttypes": "cpp",
         "ctime": "cpp",
-        "iomanip": "cpp"
+        "iomanip": "cpp",
+        "chrono": "cpp",
+        "condition_variable": "cpp",
+        "map": "cpp",
+        "ratio": "cpp",
+        "set": "cpp",
+        "mutex": "cpp",
+        "thread": "cpp",
+        "*.cuh": "cpp"
     }
 }
