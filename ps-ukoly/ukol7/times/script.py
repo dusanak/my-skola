@@ -5,12 +5,13 @@ import timeit
 def measureTimeToCSV():
     code = Template("""
 import os
-os.system("{ ./ukol7/task $len; } 1>/dev/null")
+os.system("{ ./ukol7/task $len $thr; } 1>/dev/null")
 """)
     with open("./ukol7/times/znaky.csv", "a") as f:
         f.write("LENGTH,TIME\n")
-        for i in range(1, 3):
-            f.write("{},{}\n".format(i, timeit.timeit(code.substitute(len = str(i), number=1))))
+        for j in range(1, 7):
+            f.write("{},{}\n".format(j, timeit.timeit(code.substitute(len = str(j), thr = str(1024)), number=1)))
+        f.write("\n")
 
 if __name__ == "__main__":
     measureTimeToCSV()
