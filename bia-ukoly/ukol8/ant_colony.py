@@ -7,9 +7,6 @@ import random
 import time
 from itertools import chain
 
-#TODO
-#Modify chart, finish the algorithm itself.
-
 def main():
     ant_colony_travelling_salesman(2, 0, 100)
 
