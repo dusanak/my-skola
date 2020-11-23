@@ -79,7 +79,7 @@ def firefly_algo(foo, dimension, min, max):
 
     population = [Firefly().generateRandom(dimension, min, max) for i in range(population_size)]
 
-    for i in range(generations):
+    for _ in range(generations):
         chart.draw(population)
 
         new_population = population.copy()
@@ -89,6 +89,10 @@ def firefly_algo(foo, dimension, min, max):
                     firefly.moveToFirefly(another_firefly, alpha, beta, min, max)
 
         new_population.sort(key = (lambda x: foo(x.position)))
+
+        #random movement of best firefly
+        new_population[0].moveFireflyRandom(alpha, min, max, foo)
+
         population = new_population
         
     plt.pause(10)
@@ -145,6 +149,14 @@ class Firefly:
     def generateRandom(self, dimension, min, max):
         self.position = [random.uniform(min, max) for i in range(dimension)]
         return self
+
+    def moveFireflyRandom(self, alpha, min, max, foo):
+        old_pos = self.position.copy()
+
+        self.moveToFirefly(self, alpha, 0, min, max)
+
+        if foo(old_pos) < foo(self.position):
+            self.position = old_pos
 
     def moveToFirefly(self, another_firefly, alpha, beta, min, max):
         for index, _ in enumerate(self.position):
