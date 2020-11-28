@@ -2,25 +2,34 @@
 #include <iomanip>
 #include <vector>
 #include <memory>
+#include <chrono>
+#include <omp.h>
 
 class Matrix {
-    std::pair<int, int> dimensions;
+    int x;
+    int y;
 
     public:
     Matrix(int x, int y) {
-        dimensions = std::make_pair(x, y);
+        this -> x = x;
+        this -> y = y;        
     }
 
-    std::pair<int, int> getDimensions() {
-        return dimensions;
+    int getX() {
+        return x;
     };
+
+    int getY() {
+        return y;
+    };
+
     virtual void setValue(int x, int y, int value) = 0;
     virtual int getValue(int x, int y) = 0;
 
     void printMatrix() {
-        for (int i = 0; i < dimensions.second; i++) {
+        for (int i = 0; i < getY(); i++) {
             std::cout << std::left;
-            for (int j = 0; j < dimensions.first; j++) {
+            for (int j = 0; j < getX(); j++) {
                 std::cout << std::setw(6) << getValue(j, i);
             }
             std::cout << std::endl;
@@ -28,11 +37,11 @@ class Matrix {
     }
 
     bool static canMultiply(Matrix & first, Matrix & second) {
-        return first.getDimensions().first == second.getDimensions().second; 
+        return first.getX() == second.getY(); 
     }
 
     int static multiplyPosition(Matrix & first, Matrix & second, int x, int y) {
-        const int dimension = first.getDimensions().second;
+        const int dimension = first.getY();
         int sum = 0;
 
         for (int i = 0; i < dimension; i++) {
@@ -43,11 +52,12 @@ class Matrix {
     }
 
     std::shared_ptr<std::vector<int>> static multiplyMatricesData(Matrix & first, Matrix & second) {
-        std::shared_ptr<std::vector<int>> data = std::make_shared<std::vector<int>>();
+        std::shared_ptr<std::vector<int>> data = std::make_shared<std::vector<int>>(first.getX() * second.getY());
 
-        for (int i = 0; i < first.getDimensions().first; i++) {
-            for (int j = 0; j < second.getDimensions().second; j++) {
-                data -> push_back(multiplyPosition(first, second, i, j));
+        #pragma omp parallel for
+        for (int i = 0; i < first.getX(); i++) {
+            for (int j = 0; j < second.getY(); j++) {
+                (*data)[i * second.getY() + j] = multiplyPosition(first, second, i, j);
             }
         }
 
@@ -59,13 +69,13 @@ class Matrix2D : public Matrix {
     std::vector<std::vector<int>> data;
 
     public:
-    Matrix2D(int x, int y, std::vector<int> & data) : Matrix(x, y) {        
+    Matrix2D(int x, int y, std::vector<int> & data) : Matrix(x, y) {
+        this->data = std::vector<std::vector<int>>(y);
         for (int i = 0; i < y; i++) {
-            std::vector<int> row;
+            this->data[i] = std::vector<int>(x);
             for (int j = 0; j < x; j++) {
-                row.push_back(data[i*x + j]);
+                this->data[i][j] = data[i*x + j];
             }
-            this->data.push_back(row);
         }
     }
 
@@ -79,8 +89,8 @@ class Matrix2D : public Matrix {
 
     std::shared_ptr<Matrix2D> static multiplyMatrices(Matrix & first, Matrix & second) {
         return std::make_shared<Matrix2D>(
-            first.getDimensions().first,
-            second.getDimensions().second,
+            first.getX(),
+            second.getY(),
             *Matrix::multiplyMatricesData(first, second)
         );
     }
@@ -95,48 +105,53 @@ class Matrix1D : public Matrix {
     }
 
     void setValue(int x, int y, int value) {
-        data[x + y * getDimensions().first] = value;
+        data[x + y * getX()] = value;
     }
 
     int getValue(int x, int y) {
-        return data[x + y * getDimensions().first];
+        return data[x + y * getX()];
     }
 
     std::shared_ptr<Matrix1D> static multiplyMatrices(Matrix & first, Matrix & second) {
         return std::make_shared<Matrix1D>(
-            first.getDimensions().first,
-            second.getDimensions().second,
+            first.getX(),
+            second.getY(),
             *Matrix::multiplyMatricesData(first, second)
         );
     }
 };
 
-int main() {
-    std::vector<int> data = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+int main(int argc, char * argv[]) {
+    omp_set_num_threads(1);
+    bool use_1d_matrix = false;
+    int matrix_size = 1024;
 
-    std::shared_ptr<Matrix> matrix1 = std::make_shared<Matrix2D>(3, 4, data);
-    std::shared_ptr<Matrix> matrix2 = std::make_shared<Matrix1D>(4, 3, data);
+    if (argc == 4) {
+        omp_set_num_threads(std::atoi(argv[1]));
+        use_1d_matrix = std::atoi(argv[2]);
+        matrix_size = std::atoi(argv[3]);
+    }
 
-    matrix1 -> printMatrix();
-    std::cout << std::endl;
-    matrix2 -> printMatrix();
-    std::cout << std::endl;
+    std::vector<int> data;
+    for (int i = 0; i < matrix_size*matrix_size; i++) {
+        data.push_back(i % 64);
+    }
 
-    std::shared_ptr<Matrix> matrix3 = Matrix2D::multiplyMatrices(*matrix1, *matrix2);
-    matrix3 -> printMatrix();
-    std::cout << std::endl;
+    auto start = std::chrono::high_resolution_clock::now();
 
-    std::shared_ptr<Matrix> matrix4 = Matrix1D::multiplyMatrices(*matrix1, *matrix2);
-    matrix4 -> printMatrix();
-    std::cout << std::endl;
+    if (!use_1d_matrix) {
+        std::shared_ptr<Matrix> matrix1 = std::make_shared<Matrix2D>(matrix_size, matrix_size, data);
+        std::shared_ptr<Matrix> matrix2 = std::make_shared<Matrix2D>(matrix_size, matrix_size, data);
+        std::shared_ptr<Matrix> matrix3 = Matrix2D::multiplyMatrices(*matrix1, *matrix2);
+    } else {
+        std::shared_ptr<Matrix> matrix1 = std::make_shared<Matrix1D>(matrix_size, matrix_size, data);
+        std::shared_ptr<Matrix> matrix2 = std::make_shared<Matrix1D>(matrix_size, matrix_size, data);
+        std::shared_ptr<Matrix> matrix3 = Matrix1D::multiplyMatrices(*matrix1, *matrix2);
+    }
 
-    std::shared_ptr<Matrix> matrix5 = Matrix2D::multiplyMatrices(*matrix2, *matrix1);
-    matrix5 -> printMatrix();
-    std::cout << std::endl;
+    auto end = std::chrono::high_resolution_clock::now();
 
-    std::shared_ptr<Matrix> matrix6 = Matrix1D::multiplyMatrices(*matrix2, *matrix1);
-    matrix6 -> printMatrix();
-    std::cout << std::endl;
+    std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() / 1000.0 << std::endl;
 
-    return 1;
+    return 0;
 }
