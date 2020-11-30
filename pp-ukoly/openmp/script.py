@@ -12,7 +12,7 @@ os.system("{ $path $thr $matrix $size; } 1>/dev/null")
 
     for i in range(512, 2049, 512):
         with open(os.path.join(os.path.dirname(sys.argv[0]), "{}_2d.csv".format(i)), "a") as f:
-            f.write("FORKS,TIME\n")
+            f.write("THREADS,TIME\n")
 
             f.write("{},{}\n".format(1, timeit.timeit(code.substitute(path = os.path.join(os.path.dirname(sys.argv[0]), "openmp"),
                                                                       thr = str(1),
@@ -29,7 +29,7 @@ os.system("{ $path $thr $matrix $size; } 1>/dev/null")
 
     for i in range(512, 2049, 512):
         with open(os.path.join(os.path.dirname(sys.argv[0]), "{}_1d.csv".format(i)), "a") as f:
-            f.write("FORKS,TIME\n")
+            f.write("THREADS,TIME\n")
 
             f.write("{},{}\n".format(1, timeit.timeit(code.substitute(path = os.path.join(os.path.dirname(sys.argv[0]), "openmp"),
                                                                       thr = str(1),
