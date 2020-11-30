@@ -1,8 +1,10 @@
-CC=g++
-CFLAGS= -std=c++17
-CLIB= -li2c
+CC      := g++
+CFLAGS  := -std=c++17
+CLIB    := -li2c
 
-all: HTShumi HTStemp LPSpres LPStemp
+TARGETS := HTShumi HTStemp LPSpres LPStemp
+
+all: $(TARGETS)
 
 HTShumi: HTShumi.cpp HTS221.o
 	$(CC) $(CFLAGS) $^ -o $@ $(CLIB)
