@@ -151,7 +151,9 @@ int main(int argc, char * argv[]) {
 
     auto end = std::chrono::high_resolution_clock::now();
 
-    std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() / 1000.0 << std::endl;
+    int64_t time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() / 1000;
 
-    return 0;
+    std::cout << time << std::endl;
+
+    return time;
 }
