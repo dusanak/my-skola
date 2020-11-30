@@ -1,0 +1,8 @@
+Zdrojový kód je obsažen v souboru openmp.cpp. Ve zdrojovém kódu je implementováno násobení matic a implementace matic s různou vnitřní implementací pole dat (1D, 2D). Násobení matic je paralelizováno s využitím knihovny OpenMP.
+Pro sestavení zdrojového kódu je připravený soubor makefile, který lze spustit pomocí příkazu make.
+
+Pro měření času běhu je k dispozici skript napsaný v jazyce Python. Ten měří čas pro velikosti matice 512, 1024, 1536 a 2048, vždy se jedná o čtvercové matice. Samotná implementace matice v C++ podporuje i matice nečtvercové, není to však využito při měření času, jelikož to nemá vliv na výkon a zjednodušilo to implementaci skriptu. Naměřené časy se ukládájí do souborů s příponou csv.
+
+Dále je přiložený jeden graf (pro rozměr 2048) srovnávající časy obou implementací násobení matic. Další grafy přiloženy nejsou, jelikož jejich průběhy jsou takřka totožné.
+
+Mým zjištěním je, že implementace pomocí dvourozměrného pole je časově efektivnější než implementace pomocí jednorozměrného pole. Snažil jsem se implementovat matice tak, aby implementace vytváření matice byla pokud možno co nejméně složitá, tak aby vytváření výsledné matice při násobení mělo na změřené časy minimální vliv. Jelikož se naměřené hodnoty neliší o nějaký konstantní čas, je toto snad splněno. Měřil jsem časy i pro různé počty vláken (1, 6, 12,...60), od 6 dál byla už délka běhu téměř neměnná. Násobek 6 byl zvolen, jelikož počítač na němž byly časy měřeny má procesor o šesti jádrech s hyperthreadingem.
