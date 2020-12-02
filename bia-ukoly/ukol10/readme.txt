@@ -1,0 +1,1 @@
+Pro vygenerování csv souborů obsahujících srovnání jednotlivých funkcí lze spustit skript algo_tester.py

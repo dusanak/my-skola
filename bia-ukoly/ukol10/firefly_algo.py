@@ -1,7 +1,7 @@
 import math
 import random
 import copy
-from afunctions import CallCounter
+from functions import CallCounter
 
 def firefly_algo(foo, dimension, min, max, population_size, max_ofe):
     counter = CallCounter(foo, max_ofe)

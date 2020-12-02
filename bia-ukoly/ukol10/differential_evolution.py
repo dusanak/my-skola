@@ -1,5 +1,5 @@
 import random
-from afunctions import CallCounter
+from functions import CallCounter
 
 def differential_evolution(foo, dimension, min, max, population_size, max_ofe):
     counter = CallCounter(foo, max_ofe)

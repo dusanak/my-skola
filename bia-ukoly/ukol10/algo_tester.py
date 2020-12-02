@@ -1,4 +1,4 @@
-from afunctions import sphere, michalewicz, ackley, zakharov, rosenbrock, rastrigin, griewangk, levy, schwefel
+from functions import sphere, michalewicz, ackley, zakharov, rosenbrock, rastrigin, griewangk, levy, schwefel
 from differential_evolution import differential_evolution
 from firefly_algo import firefly_algo
 from particle_swarm import particle_swarm
