@@ -11,6 +11,7 @@ interface Shape {
 // Every class must have a primary constructor. Primary constructor is a part of the header.
 // There can also be any number of secondary constructors.
 // Constructor parameters with a var or val prefix are also class fields.
+// In contrast with Java, class fields are public by default.
 open class Rectangle(val x: Int, val y: Int): Shape {
 
     override fun area(): Int {
