@@ -21,6 +21,5 @@ public class IsListSorted extends BaseMatcher<List<Integer>> {
 
     @Override
     public void describeTo(Description description) {
-
     }
 }
