@@ -31,7 +31,7 @@ public interface SecurityInfo {
         return getLoggedUserFirebaseUid().orElse("N/A");
     }
 
-    default  String printLoggedUserId() {
+    default String printLoggedUserId() {
         return getLoggedUserId().map(id -> id.toString()).orElse("N/A");
     }
 }

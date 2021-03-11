@@ -1,6 +1,7 @@
 package com.skillsfighters;
 
 import com.skillsfighters.controllers.ActivityController;
+import com.skillsfighters.controllers.ActivityGroupController;
 import com.skillsfighters.controllers.requests.ActivityCreate;
 import com.skillsfighters.controllers.requests.ActivityUpdate;
 import com.skillsfighters.controllers.responses.ActivityList;
@@ -9,14 +10,18 @@ import com.skillsfighters.domain.ActivityDTO;
 import com.skillsfighters.repository.ActivityGroupRepository;
 import com.skillsfighters.repository.ActivityRepositoryCrud;
 import com.skillsfighters.repository.DeviceGroupRepositoryCrud;
+import com.skillsfighters.security.SecurityInfo;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import javax.swing.text.html.Option;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -94,21 +99,61 @@ public class ActivityControllerUnitTest {
         assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
     }
 
-    @DisplayName("Activity Controller - show all activities - everything OK")
+    @DisplayName("Activity Controller - show all activities - activities returned, everything OK")
     @Test
     public void showAllActivities() {
         ActivityRepositoryCrud activityRepositoryCrud = mock(ActivityRepositoryCrud.class);
         ActivityGroupRepository activityGroupRepository = mock(ActivityGroupRepository.class);
         DeviceGroupRepositoryCrud deviceGroupRepositoryCrud = mock(DeviceGroupRepositoryCrud.class);
 
-        ActivityList activities = new ActivityList(new ArrayList<>());
+        List<ActivityDTO> activities = new ArrayList<>();
+        activities.add(new ActivityDTO(1L, new Date(), 10L, new Date(), new Date(), false));
+        activities.add(new ActivityDTO(2L, new Date(), 10L, new Date(), new Date(), false));
+        activities.add(new ActivityDTO(3L, new Date(), 10L, new Date(), new Date(), false));
+
         doReturn(activities).when(activityRepositoryCrud).findAllByGroupId(20L);
 
-        ActivityController activityController = new ActivityController(activityRepositoryCrud, activityGroupRepository, deviceGroupRepositoryCrud);
+        ActivityController activityController = spy(new ActivityController(
+                activityRepositoryCrud,
+                activityGroupRepository,
+                deviceGroupRepositoryCrud)
+        );
+
+        doReturn(Optional.of(10L)).when((SecurityInfo)activityController).getLoggedUserId();
         ResponseEntity<ActivityList> responseEntity = activityController.showActivitiesByParentId(20L);
 
         verify(activityRepositoryCrud).findAllByGroupId(20L);
         verifyNoMoreInteractions(activityRepositoryCrud);
+
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+    }
+
+    @DisplayName("Activity Controller - show all activities - no activities returned, everything OK")
+    @Test
+    public void showAllActivitiesEmpty() {
+        ActivityRepositoryCrud activityRepositoryCrud = mock(ActivityRepositoryCrud.class);
+        ActivityGroupRepository activityGroupRepository = mock(ActivityGroupRepository.class);
+        DeviceGroupRepositoryCrud deviceGroupRepositoryCrud = mock(DeviceGroupRepositoryCrud.class);
+
+        when(activityGroupRepository.showGroupsByParentId(10L, 20L)).thenReturn(Optional.empty());
+
+        ActivityList activities = new ActivityList(new ArrayList<>());
+        doReturn(activities).when(activityRepositoryCrud).findAllByGroupId(20L);
+
+        ActivityController activityController = spy(new ActivityController(
+                activityRepositoryCrud,
+                activityGroupRepository,
+                deviceGroupRepositoryCrud)
+        );
+
+        doReturn(Optional.of(10L)).when((SecurityInfo)activityController).getLoggedUserId();
+        ResponseEntity<ActivityList> responseEntity = activityController.showActivitiesByParentId(20L);
+
+        verify(activityRepositoryCrud).findAllByGroupId(20L);
+        verifyNoMoreInteractions(activityRepositoryCrud);
+
+        verify(activityGroupRepository).showGroupsByParentId(10L, 20L);
+        verifyNoMoreInteractions(activityGroupRepository);
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }

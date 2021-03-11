@@ -84,29 +84,27 @@ public class ActivityController implements SecurityInfo {
             return ResponseEntity.badRequest().build();
         } else {
             log.debug("user: {} - showActivitiesByParentId - activities from group: {} successfully showed", printLoggedUserFirebaseUid(), groupId);
-            final List<ActivityDTO> activityDTOs = activityRepositoryCrud.findAllByGroupId(groupId);
+            final List<ActivityDTO> activityDTOs = new ArrayList<ActivityDTO>();
 
-            if (activityDTOs.isEmpty()) {
-                Queue<Long> activityGroups = new LinkedList<>();
-                activityGroups.add(groupId);
+            Queue<Long> activityGroups = new LinkedList<>();
+            activityGroups.add(groupId);
 
-                while (!activityGroups.isEmpty()) {
-                    Long activityGroup = activityGroups.remove();
-                    List<ActivityDTO> allByGroupId = activityRepositoryCrud.findAllByGroupId(activityGroup);
+            while (!activityGroups.isEmpty()) {
+                Long activityGroup = activityGroups.remove();
+                List<ActivityDTO> allByGroupId = activityRepositoryCrud.findAllByGroupId(activityGroup);
 
-                    if (allByGroupId.isEmpty()) {
-                        Optional<GroupResponseList> groupsResponses = activityGroupRepository.showGroupsByParentId(userId.get(), activityGroup);
-                        groupsResponses.ifPresent(responses -> responses.forEach((i) ->
-                                activityGroups.add(i.getId())
-                        ));
-                    } else {
-                        activityDTOs.addAll(allByGroupId);
-                    }
+                if (allByGroupId.isEmpty()) {
+                    Optional<GroupResponseList> groupsResponses = activityGroupRepository.showGroupsByParentId(userId.get(), activityGroup);
+                    groupsResponses.ifPresent(responses -> responses.forEach((i) ->
+                            activityGroups.add(i.getId())
+                    ));
+                } else {
+                    activityDTOs.addAll(allByGroupId);
                 }
             }
 
             final List<Activity> activities = activityDTOs.stream()
-                    .map(activityDTO -> activityDTO.toActivity())
+                    .map(ActivityDTO::toActivity)
                     .collect(Collectors.toList());
             return new ResponseEntity<>(new ActivityList(activities), HttpStatus.OK);
         }
