@@ -7,7 +7,7 @@ drop_k(X, [H|T], K, R) :- K > 0, K1 is K - 1, drop_k(X, T, K1, R1), R = [H|R1].
 
 isSorted([]).
 isSorted([_]).
-isSorted([A, B|T]) :- A =< B, isSorted(T).
+isSorted([A, B|T]) :- A =< B, isSorted([B|T]).
 
 bubble([], []).
 bubble([A], [A]).
@@ -25,8 +25,8 @@ more_than(_, [], []).
 more_than(X, [H|T], R) :- H =< X, more_than(X, T, R).
 more_than(X, [H|T], [H|R]) :- H > X, more_than(X, T, R).
 
-quicksort(X, X) :- isSorted(X).
-quicksort([H|T], R) :- not(isSorted([H|T])), 
-                       less_than(H, T, Less), more_than(H, T, More),
+quicksort([], []).
+quicksort([X], [X]).
+quicksort([H|T], R) :- less_than(H, T, Less), more_than(H, T, More),
                        quicksort(Less, R1), quicksort(More, R2),
                        append([R1, [H], R2], R).
