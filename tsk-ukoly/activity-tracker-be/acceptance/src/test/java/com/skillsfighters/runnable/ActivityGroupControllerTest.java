@@ -1,19 +1,21 @@
 package com.skillsfighters.runnable;
 
-import com.skillsfighters.runnable.domain.*;
+import com.skillsfighters.runnable.domain.ActivityGroup;
 import com.skillsfighters.runnable.helper.CreateHelper;
 import com.skillsfighters.runnable.helper.HttpHelperAuth;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.http.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class ActivityGroupControllerTest {
     private long groupId;
 
-    @Before
+    @BeforeEach
     public void initialization() {
         groupId = CreateHelper.createGroup();
         CreateHelper.createActivity(groupId);
@@ -30,9 +32,9 @@ public class ActivityGroupControllerTest {
 
         long localGroupId = responseEntity.getBody().getId();
 
-        Assert.assertNotNull(responseEntity.getBody());
-        Assert.assertTrue(localGroupId > 0);
-        Assert.assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode());
+        assertNotNull(responseEntity.getBody());
+        assertTrue(localGroupId > 0);
+        assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode());
     }
 
     @Test
@@ -44,10 +46,10 @@ public class ActivityGroupControllerTest {
 
         long localGroupId = responseEntity.getBody().getId();
 
-        Assert.assertNotNull(responseEntity.getBody());
-        Assert.assertTrue(localGroupId > 0);
-        Assert.assertFalse(groupId == localGroupId);
-        Assert.assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode());
+        assertNotNull(responseEntity.getBody());
+        assertTrue(localGroupId > 0);
+        assertFalse(groupId == localGroupId);
+        assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode());
     }
 
     @Test
@@ -61,8 +63,8 @@ public class ActivityGroupControllerTest {
         } catch (HttpClientErrorException exception) {
             thrownException = exception;
         }
-        Assert.assertNotNull(thrownException);
-        Assert.assertEquals(HttpStatus.BAD_REQUEST, thrownException.getStatusCode());
+        assertNotNull(thrownException);
+        assertEquals(HttpStatus.BAD_REQUEST, thrownException.getStatusCode());
     }
 
     @Test
@@ -78,8 +80,8 @@ public class ActivityGroupControllerTest {
             thrownException = exception;
         }
 
-        Assert.assertNotNull(thrownException);
-        Assert.assertEquals(HttpStatus.NOT_FOUND, thrownException.getStatusCode());
+        assertNotNull(thrownException);
+        assertEquals(HttpStatus.NOT_FOUND, thrownException.getStatusCode());
     }
 
     @Test
@@ -88,12 +90,12 @@ public class ActivityGroupControllerTest {
         String requestJson = "{\"name\":\"Fanta\", \"id\":" + groupId + "}";
         ResponseEntity<ActivityGroup> responseEntity = HttpHelperAuth.updateAuth(urlUpdateGroup, requestJson, ActivityGroup.class);
 
-        Assert.assertEquals(groupId, responseEntity.getBody().getId());
-        Assert.assertEquals("Fanta", responseEntity.getBody().getName());
-        Assert.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        Assert.assertNotNull(responseEntity.getBody().getCreatedAt());
-        Assert.assertNotNull(responseEntity.getBody().getUpdatedAt());
-        Assert.assertTrue(responseEntity.getBody().getCreatedAt() < responseEntity.getBody().getUpdatedAt());
+        assertEquals(groupId, responseEntity.getBody().getId());
+        assertEquals("Fanta", responseEntity.getBody().getName());
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertNotNull(responseEntity.getBody().getCreatedAt());
+        assertNotNull(responseEntity.getBody().getUpdatedAt());
+        assertTrue(responseEntity.getBody().getCreatedAt() < responseEntity.getBody().getUpdatedAt());
     }
 
     @Test
@@ -101,10 +103,10 @@ public class ActivityGroupControllerTest {
         String urlShowActivityGroup = "http://localhost:8080/group/show?groupid=" + groupId;
         ResponseEntity<ActivityGroup> responseEntity = HttpHelperAuth.showAuth(urlShowActivityGroup, ActivityGroup.class);
 
-        Assert.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        Assert.assertEquals(groupId, responseEntity.getBody().getId());
-        Assert.assertNotNull(responseEntity.getBody().getCreatedAt());
-        Assert.assertNotNull(responseEntity.getBody().getUpdatedAt());
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertEquals(groupId, responseEntity.getBody().getId());
+        assertNotNull(responseEntity.getBody().getCreatedAt());
+        assertNotNull(responseEntity.getBody().getUpdatedAt());
     }
 
     @Test
@@ -112,8 +114,8 @@ public class ActivityGroupControllerTest {
         String urlCountActivityGroup = "http://localhost:8080/group/count?groupid=" + groupId;
         ResponseEntity<Long> responseEntity = HttpHelperAuth.showAuth(urlCountActivityGroup, Long.class);
 
-        Assert.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        Assert.assertNotNull(responseEntity.getBody());
-        Assert.assertEquals(3L, responseEntity.getBody().longValue());
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertNotNull(responseEntity.getBody());
+        assertEquals(3L, responseEntity.getBody().longValue());
     }
 }
