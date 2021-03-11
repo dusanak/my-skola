@@ -113,7 +113,7 @@ public class ActivityControllerUnitTest {
         activities.add(new ActivityDTO(2L, new Date(), 10L, new Date(), new Date(), false));
         activities.add(new ActivityDTO(3L, new Date(), 10L, new Date(), new Date(), false));
 
-        doReturn(activities).when(activityRepositoryCrud).findAllByGroupId(20L);
+        doReturn(activities).when(activityRepositoryCrud).findAllByGroupId(10L);
 
         ActivityController activityController = spy(new ActivityController(
                 activityRepositoryCrud,
