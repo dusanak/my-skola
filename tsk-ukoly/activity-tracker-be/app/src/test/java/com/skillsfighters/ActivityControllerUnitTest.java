@@ -5,6 +5,8 @@ import com.skillsfighters.controllers.ActivityGroupController;
 import com.skillsfighters.controllers.requests.ActivityCreate;
 import com.skillsfighters.controllers.requests.ActivityUpdate;
 import com.skillsfighters.controllers.responses.ActivityList;
+import com.skillsfighters.controllers.responses.GroupResponseList;
+import com.skillsfighters.controllers.responses.GroupsResponse;
 import com.skillsfighters.domain.Activity;
 import com.skillsfighters.domain.ActivityDTO;
 import com.skillsfighters.repository.ActivityGroupRepository;
@@ -99,9 +101,9 @@ public class ActivityControllerUnitTest {
         assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
     }
 
-    @DisplayName("Activity Controller - show all activities - activities returned, everything OK")
+    @DisplayName("Activity Controller - show all activities by parent id - activities returned, everything OK")
     @Test
-    public void showAllActivities() {
+    public void showAllActivitiesByParentId() {
         ActivityRepositoryCrud activityRepositoryCrud = mock(ActivityRepositoryCrud.class);
         ActivityGroupRepository activityGroupRepository = mock(ActivityGroupRepository.class);
         DeviceGroupRepositoryCrud deviceGroupRepositoryCrud = mock(DeviceGroupRepositoryCrud.class);
@@ -120,17 +122,53 @@ public class ActivityControllerUnitTest {
         );
 
         doReturn(Optional.of(10L)).when((SecurityInfo)activityController).getLoggedUserId();
-        ResponseEntity<ActivityList> responseEntity = activityController.showActivitiesByParentId(20L);
+        ResponseEntity<ActivityList> responseEntity = activityController.showActivitiesByParentId(10L);
 
-        verify(activityRepositoryCrud).findAllByGroupId(20L);
+        verify(activityRepositoryCrud).findAllByGroupId(10L);
         verifyNoMoreInteractions(activityRepositoryCrud);
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
 
-    @DisplayName("Activity Controller - show all activities - no activities returned, everything OK")
+    @DisplayName("Activity Controller - show all activities by parent id - activities returned, everything OK")
     @Test
-    public void showAllActivitiesEmpty() {
+    public void showAllActivitiesByParentIdInGroup() {
+        ActivityRepositoryCrud activityRepositoryCrud = mock(ActivityRepositoryCrud.class);
+        ActivityGroupRepository activityGroupRepository = mock(ActivityGroupRepository.class);
+        DeviceGroupRepositoryCrud deviceGroupRepositoryCrud = mock(DeviceGroupRepositoryCrud.class);
+
+        GroupResponseList groupResponseList = new GroupResponseList();
+        groupResponseList.add(new GroupsResponse(10L, "Test", 3L, Optional.of(20L)));
+
+        doReturn(Optional.of(groupResponseList)).when(activityGroupRepository).showGroupsByParentId(10L, 20L);
+
+        List<ActivityDTO> activities = new ArrayList<>();
+        activities.add(new ActivityDTO(1L, new Date(), 10L, new Date(), new Date(), false));
+        activities.add(new ActivityDTO(2L, new Date(), 10L, new Date(), new Date(), false));
+        activities.add(new ActivityDTO(3L, new Date(), 10L, new Date(), new Date(), false));
+
+        doReturn(new ArrayList<>()).when(activityRepositoryCrud).findAllByGroupId(20L);
+        doReturn(activities).when(activityRepositoryCrud).findAllByGroupId(10L);
+
+        ActivityController activityController = spy(new ActivityController(
+                activityRepositoryCrud,
+                activityGroupRepository,
+                deviceGroupRepositoryCrud)
+        );
+
+        doReturn(Optional.of(10L)).when((SecurityInfo)activityController).getLoggedUserId();
+        ResponseEntity<ActivityList> responseEntity = activityController.showActivitiesByParentId(20L);
+
+        verify(activityRepositoryCrud).findAllByGroupId(20L);
+        verify(activityRepositoryCrud).findAllByGroupId(10L);
+        verifyNoMoreInteractions(activityRepositoryCrud);
+
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+    }
+
+    @DisplayName("Activity Controller - show all activities by parent id - no activities returned, everything OK")
+    @Test
+    public void showAllActivitiesByParentIdEmpty() {
         ActivityRepositoryCrud activityRepositoryCrud = mock(ActivityRepositoryCrud.class);
         ActivityGroupRepository activityGroupRepository = mock(ActivityGroupRepository.class);
         DeviceGroupRepositoryCrud deviceGroupRepositoryCrud = mock(DeviceGroupRepositoryCrud.class);
@@ -158,9 +196,9 @@ public class ActivityControllerUnitTest {
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
 
-    @DisplayName("Activity Controller - show activity with negative group ID(invalid input)")
+    @DisplayName("Activity Controller - show all activities by parent id with negative group ID(invalid input)")
     @Test
-    public void showAllActivitiesWithNegativeGroupId() {
+    public void showAllActivitiesByParentIdWithNegativeGroupId() {
         ActivityRepositoryCrud activityRepositoryCrud = mock(ActivityRepositoryCrud.class);
         ActivityGroupRepository activityGroupRepository = mock(ActivityGroupRepository.class);
         DeviceGroupRepositoryCrud deviceGroupRepositoryCrud = mock(DeviceGroupRepositoryCrud.class);
@@ -173,9 +211,9 @@ public class ActivityControllerUnitTest {
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
     }
 
-    @DisplayName("Activity Controller - show activity with zero group ID(invalid input)")
+    @DisplayName("Activity Controller - show all activities by parent id with zero group ID(invalid input)")
     @Test
-    public void showAllActivitiesWithZeroGroupId() {
+    public void showAllActivitiesByParentIdWithZeroGroupId() {
         ActivityRepositoryCrud activityRepositoryCrud = mock(ActivityRepositoryCrud.class);
         ActivityGroupRepository activityGroupRepository = mock(ActivityGroupRepository.class);
         DeviceGroupRepositoryCrud deviceGroupRepositoryCrud = mock(DeviceGroupRepositoryCrud.class);

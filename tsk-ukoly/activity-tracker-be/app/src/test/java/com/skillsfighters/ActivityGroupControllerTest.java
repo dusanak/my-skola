@@ -1,5 +1,6 @@
 package com.skillsfighters;
 
+import com.google.api.Http;
 import com.skillsfighters.controllers.ActivityGroupController;
 import com.skillsfighters.controllers.requests.ActivityGroupCreate;
 import com.skillsfighters.controllers.responses.EntityCreated;
@@ -13,7 +14,6 @@ import com.skillsfighters.repository.DeviceGroupRepositoryCrud;
 import com.skillsfighters.security.SecurityInfo;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -427,6 +427,35 @@ public class ActivityGroupControllerTest {
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
 
+    @DisplayName("ActivityGroup Controller - update group - internal server error")
+    @Test
+    public void updateInternalServerError() {
+        ActivityGroupRepository activityGroupRepository = mock(ActivityGroupRepository.class);
+        ActivityRepositoryCrud activityRepositoryCrud = mock(ActivityRepositoryCrud.class);
+        DeviceGroupRepositoryCrud deviceGroupRepositoryCrud = mock(DeviceGroupRepositoryCrud.class);
+
+        when(activityGroupRepository.update("Coffee", 10L, 20L)).thenReturn(true);
+
+        ActivityGroupController activityGroupController = spy(new ActivityGroupController(
+                activityGroupRepository,
+                activityRepositoryCrud,
+                deviceGroupRepositoryCrud)
+        );
+
+        doReturn(Optional.of(10L)).when((SecurityInfo)activityGroupController).getLoggedUserId();
+
+        ActivityGroup updatedActivityGroup = ActivityGroup.builder().id(20L).name("Coffee").userId(10L).build();
+        doReturn(Optional.empty()).when(activityGroupRepository).show(20L);
+
+        ResponseEntity<ActivityGroup> responseEntity = activityGroupController.updateActivityGroup(updatedActivityGroup);
+
+        verify(activityGroupRepository).update("Coffee", 10L, 20L);
+        verify(activityGroupRepository).show(20L);
+        verifyNoMoreInteractions(activityGroupRepository);
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntity.getStatusCode());
+    }
+
     @DisplayName("ActivityGroup Controller - update group with negative user ID(invalid input)")
     @Test
     public void updateGroupWithNegativeUserId() {
@@ -509,6 +538,150 @@ public class ActivityGroupControllerTest {
         verifyNoMoreInteractions(activityGroupRepository);
 
         assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+    }
+
+    @DisplayName("ActivityGroup Controller - contains activities - everything OK")
+    @Test
+    public void containsActivities() {
+        ActivityGroupRepository activityGroupRepository = mock(ActivityGroupRepository.class);
+        ActivityRepositoryCrud activityRepositoryCrud = mock(ActivityRepositoryCrud.class);
+        DeviceGroupRepositoryCrud deviceGroupRepositoryCrud = mock(DeviceGroupRepositoryCrud.class);
+
+        ActivityGroupController activityGroupController = spy(new ActivityGroupController(
+                activityGroupRepository,
+                activityRepositoryCrud,
+                deviceGroupRepositoryCrud)
+        );
+
+        List<ActivityDTO> activityDTOList = new ArrayList<>();
+        activityDTOList.add(new ActivityDTO());
+
+        when(activityRepositoryCrud.findAllByGroupId(10L)).thenReturn(activityDTOList);
+        doReturn(Optional.of(10L)).when((SecurityInfo)activityGroupController).getLoggedUserId();
+
+        ResponseEntity<Boolean> response = activityGroupController.containsActivities(10L);
+
+        verify(activityRepositoryCrud).findAllByGroupId(10L);
+        verifyNoMoreInteractions(activityRepositoryCrud);
+
+        assertEquals(true, response.getBody());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @DisplayName("ActivityGroup Controller - contains activities - contains no activities, everything OK")
+    @Test
+    public void containsActivitiesNoActivities() {
+        ActivityGroupRepository activityGroupRepository = mock(ActivityGroupRepository.class);
+        ActivityRepositoryCrud activityRepositoryCrud = mock(ActivityRepositoryCrud.class);
+        DeviceGroupRepositoryCrud deviceGroupRepositoryCrud = mock(DeviceGroupRepositoryCrud.class);
+
+        ActivityGroupController activityGroupController = spy(new ActivityGroupController(
+                activityGroupRepository,
+                activityRepositoryCrud,
+                deviceGroupRepositoryCrud)
+        );
+
+        List<ActivityDTO> activityDTOList = new ArrayList<>();
+
+        when(activityRepositoryCrud.findAllByGroupId(10L)).thenReturn(activityDTOList);
+        doReturn(Optional.of(10L)).when((SecurityInfo)activityGroupController).getLoggedUserId();
+
+        ResponseEntity<Boolean> response = activityGroupController.containsActivities(10L);
+
+        verify(activityRepositoryCrud).findAllByGroupId(10L);
+        verifyNoMoreInteractions(activityRepositoryCrud);
+
+        assertEquals(false, response.getBody());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @DisplayName("ActivityGroup Controller - contains activities - root group, everything OK")
+    @Test
+    public void containsActivitiesRootGroup() {
+        ActivityGroupRepository activityGroupRepository = mock(ActivityGroupRepository.class);
+        ActivityRepositoryCrud activityRepositoryCrud = mock(ActivityRepositoryCrud.class);
+        DeviceGroupRepositoryCrud deviceGroupRepositoryCrud = mock(DeviceGroupRepositoryCrud.class);
+
+        ActivityGroupController activityGroupController = spy(new ActivityGroupController(
+                activityGroupRepository,
+                activityRepositoryCrud,
+                deviceGroupRepositoryCrud)
+        );
+
+        doReturn(Optional.of(10L)).when((SecurityInfo)activityGroupController).getLoggedUserId();
+
+        ResponseEntity<Boolean> response = activityGroupController.containsActivities(0L);
+
+        verifyNoInteractions(activityRepositoryCrud);
+
+        assertEquals(false, response.getBody());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @DisplayName("ActivityGroup Controller - contains activities - non positive UserID, ERROR")
+    @Test
+    public void containsActivitiesWithNonPositiveUserId() {
+        ActivityGroupRepository activityGroupRepository = mock(ActivityGroupRepository.class);
+        ActivityRepositoryCrud activityRepositoryCrud = mock(ActivityRepositoryCrud.class);
+        DeviceGroupRepositoryCrud deviceGroupRepositoryCrud = mock(DeviceGroupRepositoryCrud.class);
+
+        ActivityGroupController activityGroupController = spy(new ActivityGroupController(
+                activityGroupRepository,
+                activityRepositoryCrud,
+                deviceGroupRepositoryCrud)
+        );
+
+        doReturn(Optional.of(-1L)).when((SecurityInfo)activityGroupController).getLoggedUserId();
+
+        ResponseEntity<Boolean> response = activityGroupController.containsActivities(10L);
+
+        verifyNoInteractions(activityRepositoryCrud);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @DisplayName("ActivityGroup Controller - contains activities - no UserID, ERROR")
+    @Test
+    public void containsActivitiesWithNoUserId() {
+        ActivityGroupRepository activityGroupRepository = mock(ActivityGroupRepository.class);
+        ActivityRepositoryCrud activityRepositoryCrud = mock(ActivityRepositoryCrud.class);
+        DeviceGroupRepositoryCrud deviceGroupRepositoryCrud = mock(DeviceGroupRepositoryCrud.class);
+
+        ActivityGroupController activityGroupController = spy(new ActivityGroupController(
+                activityGroupRepository,
+                activityRepositoryCrud,
+                deviceGroupRepositoryCrud)
+        );
+
+        doReturn(Optional.empty()).when((SecurityInfo)activityGroupController).getLoggedUserId();
+
+        ResponseEntity<Boolean> response = activityGroupController.containsActivities(10L);
+
+        verifyNoInteractions(activityRepositoryCrud);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @DisplayName("ActivityGroup Controller - contains activities - negative parent ID, ERROR")
+    @Test
+    public void containsActivitiesWithNegativeParentId() {
+        ActivityGroupRepository activityGroupRepository = mock(ActivityGroupRepository.class);
+        ActivityRepositoryCrud activityRepositoryCrud = mock(ActivityRepositoryCrud.class);
+        DeviceGroupRepositoryCrud deviceGroupRepositoryCrud = mock(DeviceGroupRepositoryCrud.class);
+
+        ActivityGroupController activityGroupController = spy(new ActivityGroupController(
+                activityGroupRepository,
+                activityRepositoryCrud,
+                deviceGroupRepositoryCrud)
+        );
+
+        doReturn(Optional.of(10L)).when((SecurityInfo)activityGroupController).getLoggedUserId();
+
+        ResponseEntity<Boolean> response = activityGroupController.containsActivities(-1L);
+
+        verifyNoInteractions(activityRepositoryCrud);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @DisplayName("ActivityGroup Controller - delete group - everything OK")

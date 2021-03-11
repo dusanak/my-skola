@@ -58,24 +58,6 @@ public class ActivityController implements SecurityInfo {
         }
     }
 
-    @RequestMapping(value = "/showall", method = RequestMethod.GET)
-    public ResponseEntity<ActivityList> showActivities() {
-
-        final Optional<Long> userId = getLoggedUserId();
-        Optional<GroupResponseList> groupsResponses = activityGroupRepository.showGroups(userId.get());
-
-        final List<Activity> activities = new ArrayList<>();
-        for (GroupsResponse groupsResponse : groupsResponses.get()) {
-            final List<ActivityDTO> activityDTOs = activityRepositoryCrud.findAllByGroupId(groupsResponse.getId());
-            activities.addAll(activityDTOs.stream()
-                    .map(ActivityDTO::toActivity)
-                    .collect(Collectors.toList()));
-        }
-
-        log.debug("user: {} - showActivities - activities successfully showed", printLoggedUserFirebaseUid());
-        return new ResponseEntity<>(new ActivityList(activities), HttpStatus.OK);
-    }
-
     @RequestMapping(value = "/showallbyparentid", method = RequestMethod.GET, params = {"groupid"})
     public ResponseEntity<ActivityList> showActivitiesByParentId(@RequestParam(value = "groupid") final long groupId) {
         final Optional<Long> userId = getLoggedUserId();
@@ -121,7 +103,7 @@ public class ActivityController implements SecurityInfo {
             log.debug("user: {} - showActivitiesByParentId - activities from group: {} successfully showed", printLoggedUserFirebaseUid(), groupId);
             final List<ActivityDTO> activityDTOs = activityRepositoryCrud.findAllByGroupId(groupId);
             final List<Activity> activities = activityDTOs.stream()
-                    .map(activityDTO -> activityDTO.toActivity())
+                    .map(ActivityDTO::toActivity)
                     .filter(activity -> activity.getTimestamp() >= startDate &&
                                         activity.getTimestamp() <= endDate)
                     .collect(Collectors.toList());
@@ -184,11 +166,11 @@ public class ActivityController implements SecurityInfo {
                 activityDTO.get().setTimestamp(timestamp);
                 activityDTO.get().setUpdatedAt(timestamp);
                 ActivityDTO updatedActivity = activityRepositoryCrud.save(activityDTO.get());
-                log.debug("user: {} - updateActivity - activity {} successfully updated, group: {}", printLoggedUserFirebaseUid(), activityId);
+                log.debug("user: {} - updateActivity - activity {} successfully updated", printLoggedUserFirebaseUid(), activityId);
                 sendRefreshMessage();
                 return new ResponseEntity(updatedActivity.toActivity(), HttpStatus.OK);
             } else {
-                log.warn("user: {} - updateToNowActivity - no activity {} found in group: {}",
+                log.warn("user: {} - updateToNowActivity - no activity {} found ",
                         printLoggedUserFirebaseUid(), activityId);
                 return ResponseEntity.notFound().build();
             }

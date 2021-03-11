@@ -165,7 +165,7 @@ public class ActivityGroupController implements SecurityInfo {
                     log.debug("user: {} - updateActivityGroup - group {} successfully updated",
                             printLoggedUserFirebaseUid(), groupToUpdate.getId());
                     sendRefreshMessage();
-                    return new ResponseEntity(updatedGroup.get(), HttpStatus.OK);
+                    return new ResponseEntity<>(updatedGroup.get(), HttpStatus.OK);
                 } else {
                     log.error("user: {} - updateActivityGroup - something went wrong with updating group {}, name: {}",
                             printLoggedUserFirebaseUid(), groupToUpdate.getId(), groupToUpdate.getName());
