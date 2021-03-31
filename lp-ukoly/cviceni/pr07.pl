@@ -1,3 +1,5 @@
+:- dynamic s/2.
+
 generuj_pole([], _).
 generuj_pole([H|X], Y) :- generuj_y(H, Y),
                           generuj_pole(X, Y).
