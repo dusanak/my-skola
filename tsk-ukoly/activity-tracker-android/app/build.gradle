@@ -1,0 +1,98 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.android.gms.oss-licenses-plugin'
+
+android {
+    compileSdkVersion 29
+    defaultConfig {
+        applicationId "com.skillsfighters.activity_tracker_android"
+        minSdkVersion 21
+        targetSdkVersion 29
+        versionCode 10
+        versionName "0.4"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        signingConfig signingConfigs.debug
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    testOptions {
+        unitTests.includeAndroidResources = true
+
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+
+    //Plugin for displaying license information for used libraries
+    implementation 'com.google.android.gms:play-services-oss-licenses:17.0.0'
+
+    //Design layout libraries
+    implementation 'com.google.android.material:material:1.3.0'
+    implementation 'androidx.browser:browser:1.3.0'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.recyclerview:recyclerview:1.2.0'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+
+    //Firebase libraries which provide authentication and messaging
+    implementation 'com.google.firebase:firebase-core:18.0.3'
+    implementation 'com.google.firebase:firebase-auth:20.0.4'
+    implementation 'com.google.firebase:firebase-messaging:21.1.0'
+    implementation 'com.firebaseui:firebase-ui-auth:4.3.1'
+    implementation 'com.facebook.android:facebook-android-sdk:4.41.0'
+
+    //Libraries for rest api
+    implementation 'com.squareup.retrofit2:retrofit:2.7.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.7.0'
+    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.7.0'
+    implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.9.1'
+
+    //Graph library
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
+
+    //Color picker library
+    implementation 'com.github.QuadFlask:colorpicker:0.0.15'
+
+    //Calendar library
+    implementation 'com.applandeo:material-calendar-view:1.7.0'
+
+    //Test libraries
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'androidx.test:core:1.3.0'
+    testImplementation 'com.squareup.okhttp3:mockwebserver:3.9.1'
+    testImplementation 'org.robolectric:robolectric:4.3.1'
+    testImplementation 'org.mockito:mockito-core:1.10.19'
+    testImplementation 'org.awaitility:awaitility:3.0.0'
+    testImplementation 'org.awaitility:awaitility-proxy:3.0.0'
+
+    androidTestImplementation 'androidx.test:core:1.3.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    androidTestImplementation 'androidx.test:runner:1.3.0'
+    androidTestImplementation 'androidx.test:rules:1.3.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-intents:3.3.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.3.0'
+
+//    androidTestCompile ('com.android.support.test.espresso:espresso-contrib:2.2'){
+//        exclude group: 'com.android.support', module: 'appcompat-v7'
+//        exclude group: 'com.android.support', module: 'support-v4'
+//        exclude module: 'recyclerview-v7'
+//    }
+
+}

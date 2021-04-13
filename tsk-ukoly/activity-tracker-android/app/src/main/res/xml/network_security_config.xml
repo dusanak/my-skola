@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">10.0.2.2</domain>
+        <domain includeSubdomains="true">activitytracker-env-1.qandz4qkde.eu-west-1.elasticbeanstalk.com</domain>
+    </domain-config>
+</network-security-config>

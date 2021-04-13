@@ -1,0 +1,90 @@
+<resources>
+    <string name="app_name" translatable="false">Activity Tracker</string>
+    <string name="signin_button">Sign in / Sign up</string>>
+    <string name="signout_button">Sign out</string>>
+    <string name="delete_account_button">Delete Account</string>>
+    <string name="login_error">Error on log in</string>>
+    <string name="user_logged_out">User logged out</string>
+    <string name="title_activity_rest">RestActivity</string>
+    <string name="title_activity_authentication">AuthenticationActivity</string>
+    <string name="title_activity_group">GroupActivity</string>
+    <string name="authentication_button">Authentication</string>
+    <string name="rest_button">REST</string>
+    <string name="read_all_button">Read All</string>
+    <string name="add_button">Add</string>
+    <string name="refresh">Refresh</string>
+    <string name="root_group">Root Group</string>
+    <string name="edit_button">Edit Button</string>
+    <string name="delete_button">Delete button</string>
+    <string name="user_deleted">User deleted</string>>
+    <string name="facebook_application_id" translatable="false">618611155336950</string>
+    <string name="facebook_login_protocol_scheme" translatable="false">618611155336950</string>
+    <string name="sign_out">Sign out</string>
+    <string name="delete">Delete</string>
+    <string name="app_info">App Info</string>
+    <string name="license_info">License Info</string>
+    <string name="week">Week</string>
+    <string name="none">None</string>
+    <string name="day">Day</string>
+    <string name="month">Month</string>
+    <string name="refresh_error">Refresh error</string>
+    <string name="edit_error">Edit error</string>
+    <string name="delete_error">Delete error</string>
+    <string name="refreshed">Refreshed</string>
+    <string name="add_error">Add error</string>
+    <string name="edit_group">Edit Group</string>
+    <string name="edit_group_message">Enter Activity Group name</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete_group">Delete Group</string>
+    <string name="delete_group_message">Are you sure you want to delete the group</string>
+    <string name="new_group">New Group</string>
+    <string name="add_group_message">Enter Activity Group name</string>
+    <string name="activity_or_group">Create an activity or a group?</string>
+    <string name="group">Group</string>
+    <string name="activity">Activity</string>
+    <string name="delete_user">Delete User</string>
+    <string name="delete_user_message">Are you sure you want to delete the current user?</string>
+    <string name="version">Version</string>
+    <string name="continue_button">Continue</string>
+    <string name="unknown_user">Unknown User</string>
+    <string name="year">Year</string>
+    <string name="graphs">Graphs</string>
+    <string name="graph_pie">Pie</string>
+    <string name="graph_bar">Bar</string>
+    <string name="title_image">TitleImage</string>
+    <string name="default_groups_error">Default groups error</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="defaults_title">Generate defaults</string>
+    <string name="default_message">Would you like to have default groups generated?</string>
+    <string name="color_picker_title">Choose color</string>
+    <string name="ok">OK</string>
+    <string name="calendar">Calendar</string>
+    <string name="material_calendar_monday">M</string>
+    <string name="material_calendar_tuesday">T</string>
+    <string name="material_calendar_wednesday">W</string>
+    <string name="material_calendar_thursday">T</string>
+    <string name="material_calendar_friday">F</string>
+    <string name="material_calendar_saturday">S</string>
+    <string name="material_calendar_sunday">S</string>
+
+    <array name="material_calendar_months_array">
+        <item>January</item>
+        <item>February</item>
+        <item>March</item>
+        <item>April</item>
+        <item>May</item>
+        <item>June</item>
+        <item>July</item>
+        <item>August</item>
+        <item>September</item>
+        <item>October</item>
+        <item>November</item>
+        <item>December</item>
+    </array>
+
+    <string name="material_calendar_today_button">Today</string>
+    <string name="material_calendar_positive_button">OK</string>
+    <string name="material_calendar_negative_button">Cancel</string>
+</resources>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add_button">Přidat</string>
+    <string name="app_info">Info</string>
+    <string name="authentication_button">Ověření</string>
+    <string name="delete">Smazat</string>
+    <string name="delete_account_button">Smazat účet</string>
+    <string name="delete_button">Tlačítko smazat</string>
+    <string name="edit_button">Tlačítko upravit</string>
+    <string name="login_error">Chyba při přihlášení</string>
+    <string name="refresh">Obnovit</string>
+    <string name="rest_button">REST</string>
+    <string name="root_group">Kořenová skupina</string>
+    <string name="sign_out">Odhlásit</string>
+    <string name="signout_button">Odhlásit</string>
+    <string name="signin_button">Přihlásit / Zaregistrovat</string>
+    <string name="title_activity_authentication">Autorizační aktivita</string>
+    <string name="title_activity_group">Skupinová aktivita</string>
+    <string name="title_activity_rest">REST aktivita</string>
+    <string name="user_deleted">Uživatel odebrán</string>
+    <string name="user_logged_out">Uživatel odhlášen</string>
+    <string name="week">Týden</string>
+    <string name="read_all_button">Načti vše</string>
+    <string name="license_info">Licence</string>
+    <string name="day">Den</string>
+    <string name="month">Měsíc</string>
+    <string name="none">Žádné</string>
+    <string name="add_error">Chyba přidání</string>
+    <string name="cancel">Zrušit</string>
+    <string name="delete_error">Chyba rušení</string>
+    <string name="delete_group">Smazat skupinu</string>
+    <string name="delete_group_message">Opravdu chcete smazat skupinu</string>
+    <string name="edit_error">Chyba úpravy</string>
+    <string name="edit_group">Upravit skupinu</string>
+    <string name="edit_group_message">Napište název pro skupinu aktivit</string>
+    <string name="refresh_error">Chyba obnovení</string>
+    <string name="refreshed">Obnoveno</string>
+    <string name="save">Uložit</string>
+    <string name="activity">Aktivita</string>
+    <string name="activity_or_group">Chcete vytvořit aktivitu nebo skupinu?</string>
+    <string name="add_group_message">Napište název pro skupinu</string>
+    <string name="delete_user">Smazat uživatele</string>
+    <string name="delete_user_message">Opravdu chcete odstranit přihlášeného uživatele?</string>
+    <string name="group">Skupina</string>
+    <string name="new_group">Nová skupina</string>
+    <string name="version">Verze</string>
+    <string name="continue_button">Pokračovat</string>
+    <string name="unknown_user">Neznámý uživatel</string>
+    <string name="year">Rok</string>
+    <string name="graphs">Grafy</string>
+    <string name="graph_bar">Sloupcový</string>
+    <string name="graph_pie">Koláčový</string>
+    <string name="title_image">Titulní obrázek</string>
+    <string name="default_groups_error">Chyba generace default skupin</string>
+    <string name="yes">Ano</string>
+    <string name="no">Ne</string>
+    <string name="default_message">Přejete si nechat vygenerovat přednastavené skupiny?</string>
+    <string name="defaults_title">Základní nastavení</string>
+    <string name="color_picker_title">Volba barvy</string>
+    <string name="ok">Ok</string>
+    <string name="calendar">Kalendář</string>
+    <string name="material_calendar_monday">Po</string>
+    <string name="material_calendar_tuesday">Ut</string>
+    <string name="material_calendar_wednesday">St</string>
+    <string name="material_calendar_thursday">Ct</string>
+    <string name="material_calendar_friday">Pa</string>
+    <string name="material_calendar_saturday">So</string>
+    <string name="material_calendar_sunday">Ne</string>
+
+    <array name="material_calendar_months_array">
+        <item>Leden</item>
+        <item>Únor</item>
+        <item>Březen</item>
+        <item>Duben</item>
+        <item>Květen</item>
+        <item>Červen</item>
+        <item>Červenec</item>
+        <item>Srpen</item>
+        <item>Září</item>
+        <item>Říjen</item>
+        <item>Listopad</item>
+        <item>Prosinec</item>
+    </array>
+
+    <string name="material_calendar_today_button">Today</string>
+    <string name="material_calendar_positive_button">OK</string>
+    <string name="material_calendar_negative_button">Cancel</string>
+</resources>

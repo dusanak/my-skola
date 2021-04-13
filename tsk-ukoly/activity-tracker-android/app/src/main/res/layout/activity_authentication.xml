@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_blue"
+    android:clickable="true"
+    android:focusable="true"
+    tools:context=".activities.AuthenticationActivity">
+
+    <Button
+        android:id="@+id/signin_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/title_image"
+        android:text="@string/signin_button"
+        android:onClick="createSignInIntent"/>
+
+    <TextView
+        android:id="@+id/username_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/title_image"
+        android:text="@string/unknown_user"
+        android:textColor="#000000"
+        android:textStyle="bold"
+        style="@android:style/TextAppearance.Large"
+        android:background="@drawable/back"/>
+
+    <ImageButton
+        android:id="@+id/continue_button"
+        android:layout_width="128dp"
+        android:layout_height="128dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/username_view"
+        android:src="@drawable/ic_play_circle_outline"
+        android:background="@color/fui_transparent"
+        android:scaleType="fitCenter"
+        android:adjustViewBounds="true"
+        android:padding="16dp"
+        tools:visibility="visible"
+        android:contentDescription="@string/continue_button"
+        android:onClick="continueToApp"/>
+
+    <ImageView
+        android:id="@+id/title_image"
+        android:layout_width="256dp"
+        android:layout_height="256dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="8dp"
+        android:contentDescription="@string/title_image"
+        android:scaleType="fitCenter"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_app_name_fin" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
