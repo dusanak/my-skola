@@ -1,4 +1,5 @@
 :- dynamic s/2.
+:- dynamic tah/3.
 
 generuj_pole([],_).                              %v teto rekurzi generujeme sloupce
 generuj_pole([H|X],Y) :- generuj_y(H,Y),
@@ -82,34 +83,63 @@ vyhra(H, Souradnice) :- s(S1, H), o(ID, S1, S2, S3, S4, S5),
                         Souradnice = [ID, S1, S2, S3, S4, S5].
 vyhra(H, []).
 
+% mapuj pole
+% zjisti jak vypada hraci pole a uloz informaci o hraci, souradnici, na kterou tahl
+% a dane pole pred tahem
+
+mapuj_pole(hrac, s) :- findall([X, Y], s(X, Y), Pole),
+                       sort(Pole, SPole),
+                       assert(tah(hrac, S, SPole)).                       
+
 % tah(Souradnice)
 tah(Souradnice) :- s(Souradnice, ' '), retract(s(Souradnice, ' ')), assert(s(Souradnice, o)),
-                   vyhra(o, VS), write(VS), nl, vypis_pole.
+                   vyhra(o, VS), write(VS), nl, vypis_pole, mapuj_pole(o, Souradnice).
 
 % hraje pocitac
 % --------------------
-% -xxx
+% -xxx-
 tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, x), s(S3, x), s(S4, x), s(S5, ' '),
-      retract(s(S5, x)), assert(s(S5, x)),
+      mapuj_pole(x, S5),
+      retract(s(S5, ' ')), assert(s(S5, x)),
       vyhra(x, VS), member(S5, VS),
-      write(VS), write([Souradnice, 'xxxx-']), nl, vypis_pole.
+      write(VS), write([Souradnice, '-xxx-']), nl, vypis_pole.
 
-% xxx-
+% xxxx-
 tp :- s(S1, x), o(ID, S1, S2, S3, S4, S5), s(S2, x), s(S3, x), s(S4, x), s(S5, ' '),
+      mapuj_pole(x, S5),
       retract(s(S5, ' ')), assert(s(S5, x)),
       vyhra(x, VS), member(S5, VS),
       write(VS), write([Souradnice, 'xxxx-']), nl, vypis_pole.
 
-% xx-x
-% x-xx
+% x-xxx
+tp :- s(S1, x), o(ID, S1, S2, S3, S4, S5), s(S2, ' '), s(S3, x), s(S4, x), s(S5, x),
+      mapuj_pole(x, S2),
+      retract(s(S2, ' ')), assert(s(S2, x)),
+      vyhra(x, VS), member(S2, VS),
+      write(VS), write([Souradnice, 'x-xxx']), nl, vypis_pole.
+% xxx-x
+tp :- s(S1, x), o(ID, S1, S2, S3, S4, S5), s(S2, x), s(S3, x), s(S4, ' '), s(S5, x),
+      mapuj_pole(x, S4),
+      retract(s(S4, ' ')), assert(s(S4, x)),
+      vyhra(x, VS), member(S4, VS),
+      write(VS), write([Souradnice, 'xxx-x']), nl, vypis_pole.
+% xx-xx
+tp :- s(S1, x), o(ID, S1, S2, S3, S4, S5), s(S2, x), s(S3, ' '), s(S4, x), s(S5, x),
+      mapuj_pole(x, S3),
+      retract(s(S3, ' ')), assert(s(S3, x)),
+      vyhra(x, VS), member(S3, VS),
+      write(VS), write([Souradnice, 'xx-xx']), nl, vypis_pole.
 % kriz
 tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, ' '), s(S3, x), s(S4, x), s(S5, ' '),
       s(S6, ' '), S1 \= S6, o(ID2, S6, S2, S7, S8, S9), s(S7, x), s(S8, x), s(S9, ' ')
+      mapuj_pole(x, S2),
       retract(s(S2, ' ')), assert(s(S2, x)),
       vyhra(x, VS), member(S2, VS),
-      write(VS), write([Souradnice, 'xxxx-']), nl, vypis_pole.
+      write(VS), write([Souradnice, 'kriz']), nl, vypis_pole.
 
 % nahod tah
-tp :- s(Souradnice, ' '), retract(s(Souradnice, ' ')), assert(s(Souradnice, x)),
+tp :- s(Souradnice, ' '),
+      mapuj_pole(x, Souradnice),
+      retract(s(Souradnice, ' ')), assert(s(Souradnice, x)),
       vyhra(x, VS), member(Souradnice, VS),
       write(VS), write([Souradnice, 'nahod tah']), nl, vypis_pole.
