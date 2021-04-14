@@ -35,7 +35,7 @@ interface UIOptionsApiClient {
         fun create(): UIOptionsApiClient {
 
             val okHttpClient = OkHttpClient.Builder()
-                .addInterceptor(FirebaseUserIdTokenInterceptor())
+                .addInterceptor(FirebaseUserIdTokenInterceptor("skillsfighters"))
                 .build()
 
             val retrofit = Retrofit.Builder()

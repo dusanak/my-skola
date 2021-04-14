@@ -19,7 +19,7 @@ interface TokenApiClient {
         fun create(): TokenApiClient {
 
             val okHttpClient = OkHttpClient.Builder()
-                .addInterceptor(FirebaseUserIdTokenInterceptor())
+                .addInterceptor(FirebaseUserIdTokenInterceptor("skillsfighters"))
                 .build()
 
             val retrofit = Retrofit.Builder()
