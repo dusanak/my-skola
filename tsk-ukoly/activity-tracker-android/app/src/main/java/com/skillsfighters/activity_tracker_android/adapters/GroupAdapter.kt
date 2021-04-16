@@ -91,9 +91,10 @@ class GroupAdapter(
                     Toast.LENGTH_SHORT
                 ).show()
 
-                if (currentGroupId == 0L && groups.isEmpty()) {
+                // commented out for debug purposes
+                /*if (currentGroupId == 0L && groups.isEmpty()) {
                     generateDefaultGroups()
-                }
+                }*/
 
                 refreshUIOptions()
             }, { error ->

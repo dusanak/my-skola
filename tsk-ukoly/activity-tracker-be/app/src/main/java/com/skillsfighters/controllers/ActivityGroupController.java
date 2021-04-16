@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.constraints.NotNull;
 import java.util.*;
 
+import static java.lang.Character.isWhitespace;
+
 @RestController
 @Slf4j
 @RequestMapping("/group")
@@ -124,7 +126,7 @@ public class ActivityGroupController implements SecurityInfo {
         final String name = activityGroupCreate.getName();
         final Optional<Long> parentId = Optional.ofNullable(activityGroupCreate.getParentId());
 
-        if ("".equals(name) || !userID.isPresent() || userID.get() <= 0L) {
+        if (isNameInvalid(name) || !userID.isPresent() || userID.get() <= 0L) {
             log.warn("user: {} - addActivityGroup - invalid input value is: name {}",
                     printLoggedUserFirebaseUid(), name);
             return ResponseEntity.badRequest().build();
@@ -154,7 +156,7 @@ public class ActivityGroupController implements SecurityInfo {
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public ResponseEntity<ActivityGroup> updateActivityGroup(@RequestBody final ActivityGroup groupToUpdate) {
         final Optional<Long> userId = getLoggedUserId();
-        if ("".equals(groupToUpdate.getName()) || !userId.isPresent() || userId.get() <= 0L || groupToUpdate.getId() <= 0L) {
+        if (isNameInvalid(groupToUpdate.getName()) || !userId.isPresent() || userId.get() <= 0L || groupToUpdate.getId() <= 0L) {
             log.warn("user: {} - updateActivityGroup - one or more invalid inputs values are: name: {}, group ID: {}",
                     printLoggedUserFirebaseUid(), groupToUpdate.getName(), groupToUpdate.getId());
             return ResponseEntity.badRequest().build();
@@ -296,6 +298,22 @@ public class ActivityGroupController implements SecurityInfo {
             Optional<GroupResponseList> groupsResponses = activityGroupRepository.showGroupsByParentId(userId.get(), 0L);
             return new ResponseEntity<>(groupsResponses.get(), HttpStatus.OK);
         }
+    }
+
+    private static boolean isNameInvalid(String name) {
+        return name == null || name.equals("") || (name.charAt(0) == '-') || isWhitespace(name.charAt(0)) || isNumeric(name.substring(0, 1));
+    }
+
+    public static boolean isNumeric(String strNum) {
+        if (strNum == null) {
+            return false;
+        }
+        try {
+            double d = Double.parseDouble(strNum);
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+        return true;
     }
 
     private void addDefaultGroupsToDb(final long userId, Locale locale) {
