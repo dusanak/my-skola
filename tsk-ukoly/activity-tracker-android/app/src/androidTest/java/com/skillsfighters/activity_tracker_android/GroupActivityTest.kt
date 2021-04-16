@@ -261,10 +261,12 @@ class GroupActivityTest {
                         click()
                     )
 
-                Thread.sleep(2000)
+                Thread.sleep(1000)
 
                 onView(withText(R.string.delete))
                     .perform(click())
+
+                Thread.sleep(1000)
             }
         }
     }
