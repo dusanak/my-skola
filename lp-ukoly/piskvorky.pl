@@ -211,90 +211,112 @@ tah(S) :- s(S,' '),
           retract(s(S,' ')), assert(s(S,o)),
           vyhra(o,VS),
           write(VS), nl,
-          vypis_pole.                
+          vypis_pole.
+
+zrus(S) :- retract(s(S, _)), assert(s(S, ' ')),
+           retract(tah(_, S, _)),
+           vypis_pole.
+
 
 % hraje pocitac
 % --------------------
 %vitezstvi
+% -xxxx
+tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, x), s(S3, x), s(S4, x), s(S5, x),
+      mapuj_pole(x, S1),
+      retract(s(S1, ' ')), assert(s(S1, x)),
+      vyhra(x, VS),
+      write(VS), write([S1, '-xxxx']), nl, vypis_pole.
 % xxxx-
 tp :- s(S1, x), o(ID, S1, S2, S3, S4, S5), s(S2, x), s(S3, x), s(S4, x), s(S5, ' '),
       mapuj_pole(x, S5),
       retract(s(S5, ' ')), assert(s(S5, x)),
       vyhra(x, VS),
-      write(VS), write([Souradnice, 'xxxx-']), nl, vypis_pole.
+      write(VS), write([S5, 'xxxx-']), nl, vypis_pole.
 
 % x-xxx
 tp :- s(S1, x), o(ID, S1, S2, S3, S4, S5), s(S2, ' '), s(S3, x), s(S4, x), s(S5, x),
       mapuj_pole(x, S2),
       retract(s(S2, ' ')), assert(s(S2, x)),
       vyhra(x, VS),
-      write(VS), write([Souradnice, 'x-xxx']), nl, vypis_pole.
+      write(VS), write([S2, 'x-xxx']), nl, vypis_pole.
 % xxx-x
 tp :- s(S1, x), o(ID, S1, S2, S3, S4, S5), s(S2, x), s(S3, x), s(S4, ' '), s(S5, x),
       mapuj_pole(x, S4),
       retract(s(S4, ' ')), assert(s(S4, x)),
       vyhra(x, VS),
-      write(VS), write([Souradnice, 'xxx-x']), nl, vypis_pole.
+      write(VS), write([S4, 'xxx-x']), nl, vypis_pole.
 % xx-xx
 tp :- s(S1, x), o(ID, S1, S2, S3, S4, S5), s(S2, x), s(S3, ' '), s(S4, x), s(S5, x),
       mapuj_pole(x, S3),
       retract(s(S3, ' ')), assert(s(S3, x)),
       vyhra(x, VS),
-      write(VS), write([Souradnice, 'xx-xx']), nl, vypis_pole.
+      write(VS), write([S3, 'xx-xx']), nl, vypis_pole.
 % blokovani vyhry
-% -ooo-
-tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, o), s(S3, o), s(S4, o), s(S5, ' '),
-      mapuj_pole(x, S5),
-      retract(s(S5, ' ')), assert(s(S5, x)),
+% -oooo
+tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, o), s(S3, o), s(S4, o), s(S5, o),
+      mapuj_pole(x, S1),
+      retract(s(S1, ' ')), assert(s(S1, x)),
       vyhra(x, VS),
-      write(VS), write([Souradnice, '-xxx-']), nl, vypis_pole.
-
+      write(VS), write([S1, '-oooo']), nl, vypis_pole.
 % oooo-
 tp :- s(S1, o), o(ID, S1, S2, S3, S4, S5), s(S2, o), s(S3, o), s(S4, o), s(S5, ' '),
       mapuj_pole(x, S5),
       retract(s(S5, ' ')), assert(s(S5, x)),
       vyhra(x, VS),
-      write(VS), write([Souradnice, 'xxxx-']), nl, vypis_pole.
+      write(VS), write([S5, 'oooo-']), nl, vypis_pole.
 
 % o-ooo
 tp :- s(S1, o), o(ID, S1, S2, S3, S4, S5), s(S2, ' '), s(S3, o), s(S4, o), s(S5, o),
       mapuj_pole(x, S2),
       retract(s(S2, ' ')), assert(s(S2, x)),
       vyhra(x, VS),
-      write(VS), write([Souradnice, 'x-xxx']), nl, vypis_pole.
+      write(VS), write([S2, 'o-ooo']), nl, vypis_pole.
 % ooo-o
 tp :- s(S1, o), o(ID, S1, S2, S3, S4, S5), s(S2, o), s(S3, o), s(S4, ' '), s(S5, o),
       mapuj_pole(x, S4),
       retract(s(S4, ' ')), assert(s(S4, x)),
       vyhra(x, VS),
-      write(VS), write([Souradnice, 'xxx-x']), nl, vypis_pole.
+      write(VS), write([S4, 'ooo-o']), nl, vypis_pole.
 % oo-oo
 tp :- s(S1, o), o(ID, S1, S2, S3, S4, S5), s(S2, o), s(S3, ' '), s(S4, o), s(S5, o),
       mapuj_pole(x, S3),
       retract(s(S3, ' ')), assert(s(S3, x)),
       vyhra(x, VS),
-      write(VS), write([Souradnice, 'xx-xx']), nl, vypis_pole.
+      write(VS), write([S3, 'oo-oo']), nl, vypis_pole.
+% -ooo-
+tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, o), s(S3, o), s(S4, o), s(S5, ' '),
+      mapuj_pole(x, S5),
+      retract(s(S5, ' ')), assert(s(S5, x)),
+      vyhra(x, VS),
+      write(VS), write([S5, '-ooo-']), nl, vypis_pole.
 % dalsi pravidla
 % -xxx-
 tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, x), s(S3, x), s(S4, x), s(S5, ' '),
       mapuj_pole(x, S5),
       retract(s(S5, ' ')), assert(s(S5, x)),
       vyhra(x, VS),
-      write(VS), write([Souradnice, '-xxx-']), nl, vypis_pole.
+      write(VS), write([S5, '-xxx-']), nl, vypis_pole.
+% x-x-x
+tp :- s(S1, x), o(ID, S1, S2, S3, S4, S5), s(S2, ' '), s(S3, x), s(S4, ' '), s(S5, x),
+      mapuj_pole(x, S4),
+      retract(s(S4, ' ')), assert(s(S4, x)),
+      vyhra(x, VS),
+      write(VS), write([S4, 'x-x-x']), nl, vypis_pole.
 % kriz
 tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, x), s(S3, ' '), s(S4, x), s(S5, ' '),
       s(S6, ' '), S1 \= S6, o(ID2, S6, S2, S7, S8, S9), s(S7, x), s(S8, x), s(S9, ' '),
       mapuj_pole(x, S2),
       retract(s(S2, ' ')), assert(s(S2, x)),
       vyhra(x, VS),
-      write(VS), write([Souradnice, 'kriz']), nl, vypis_pole.
+      write(VS), write([S2, 'kriz']), nl, vypis_pole.
 % kriz
 tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, x), s(S3, ' '), s(S4, x), s(S5, ' '),
       s(S6, ' '), S1 \= S6, o(ID2, S6, S7, S3, S8, S9), s(S7, x), s(S8, x), s(S9, ' '),
       mapuj_pole(x, S3),
       retract(s(S3, ' ')), assert(s(S3, x)),
       vyhra(x, VS),
-      write(VS), write([Souradnice, 'kriz']), nl, vypis_pole.
+      write(VS), write([S3, 'kriz']), nl, vypis_pole.
 % nahod tah
 tp :- s(Souradnice, ' '),
       mapuj_pole(x, Souradnice),
@@ -302,7 +324,7 @@ tp :- s(Souradnice, ' '),
       vyhra(x, VS),
       write(VS), write([Souradnice, 'nahod tah']), nl, vypis_pole.
 
-/*
+
 % ZPETNE PREHRANI HRY
 % ===================
 % Zde se po kazdem vypsanem tahu ceka na vstup z klavesnice, kde staci
@@ -367,5 +389,48 @@ vypis_radek([S,Hrac],[X|SX],Y,P) :- S \= [X,Y],
                                     member([[X,Y],H],P),         % zjisti, co je na souradnici [X,Y]
                                     write(' '), write(H), write(' |'),
                                     vypis_radek([S,Hrac],SX,Y,P).
-                                    */
 
+% ULOZENI STRATEGIE
+% =================
+
+%vyhral pocitac
+%--------------
+%prebira se strategie pocitace
+
+uloz_hru(x) :- findall([S,Pole],tah(x,S,Pole),Tahy),
+               zaeviduj(x,Tahy).
+
+%vyhral hrac
+%--------------
+%prebira se strategie hrace
+
+uloz_hru(o) :- findall([S,Pole],tah(o,S,Pole),Tahy),        %pokud vyhraje hrac
+               preved_tahy(Tahy,TahyNew),                   %prehod hry
+               zaeviduj(x,TahyNew).
+
+
+
+zaeviduj(_,[]).
+zaeviduj(Hrac,[[S,Pole]|Tahy]) :- not(hra(Hrac,S,Pole)),   %jeste neni ulozeno z predchozich her
+                                  assert(hra(Hrac,S,Pole)), %uloz
+                                  zaeviduj(Hrac,Tahy).
+
+zaeviduj(Hrac,[[S,Pole]|Tahy]) :- hra(Hrac,S,Pole),         %jiz ulozeno z predchozich her
+                                  zaeviduj(Hrac,Tahy).
+
+
+
+
+%Prevedeni tahu
+%--------------
+%Tam, kde tahl x bude tahnout o a naopak. Pak se ulozi x.
+preved_tahy([],[]).
+preved_tahy([[S,Pole]|Tahy],[[S,PoleNew]|TahyNew]) :-
+
+                         projdi_pole(Pole,PoleNew),        %ukazdeho tahu (pole) proved zmenu
+                         preved_tahy(Tahy,TahyNew).
+
+projdi_pole([],[]).
+projdi_pole([[S,' ']|Pole],[[S,' ']|PoleNew]) :- projdi_pole(Pole,PoleNew).
+projdi_pole([[S,x]|Pole],[[S,o]|PoleNew]) :- projdi_pole(Pole,PoleNew).
+projdi_pole([[S,o]|Pole],[[S,x]|PoleNew]) :- projdi_pole(Pole,PoleNew).
