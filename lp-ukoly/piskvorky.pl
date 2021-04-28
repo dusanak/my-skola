@@ -284,13 +284,21 @@ tp :- s(S1, o), o(ID, S1, S2, S3, S4, S5), s(S2, o), s(S3, ' '), s(S4, o), s(S5,
       retract(s(S3, ' ')), assert(s(S3, x)),
       vyhra(x, VS),
       write(VS), write([S3, 'oo-oo']), nl, vypis_pole.
-% -ooo-
-tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, o), s(S3, o), s(S4, o), s(S5, ' '),
+% dalsi pravidla
+% -xxx-
+tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, x), s(S3, x), s(S4, x), s(S5, ' '),
+      s(S6, ' '), o(ID2, S2, S3, S4, S5, S6),
       mapuj_pole(x, S5),
       retract(s(S5, ' ')), assert(s(S5, x)),
       vyhra(x, VS),
-      write(VS), write([S5, '-ooo-']), nl, vypis_pole.
-% dalsi pravidla
+      write(VS), write([S5, '-xxx-']), nl, vypis_pole.
+% -xxx-
+tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, x), s(S3, x), s(S4, x), s(S5, ' '),
+      s(S6, ' '), o(ID2, S6, S1, S2, S3, S4),
+      mapuj_pole(x, S1),
+      retract(s(S1, ' ')), assert(s(S1, x)),
+      vyhra(x, VS),
+      write(VS), write([S1, '-xxx-']), nl, vypis_pole.
 % -xxx-
 tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, x), s(S3, x), s(S4, x), s(S5, ' '),
       mapuj_pole(x, S5),
@@ -303,6 +311,67 @@ tp :- s(S1, x), o(ID, S1, S2, S3, S4, S5), s(S2, ' '), s(S3, x), s(S4, ' '), s(S
       retract(s(S4, ' ')), assert(s(S4, x)),
       vyhra(x, VS),
       write(VS), write([S4, 'x-x-x']), nl, vypis_pole.
+% xx-x-
+tp :- s(S1, x), o(ID, S1, S2, S3, S4, S5), s(S2, x), s(S3, ' '), s(S4, x), s(S5, ' '),
+      mapuj_pole(x, S3),
+      retract(s(S3, ' ')), assert(s(S3, x)),
+      vyhra(x, VS),
+      write(VS), write([S3, 'xx-x-']), nl, vypis_pole.
+% x-xx-
+tp :- s(S1, x), o(ID, S1, S2, S3, S4, S5), s(S2, ' '), s(S3, x), s(S4, x), s(S5, ' '),
+      mapuj_pole(x, S2),
+      retract(s(S2, ' ')), assert(s(S2, x)),
+      vyhra(x, VS),
+      write(VS), write([S2, 'x-xx-']), nl, vypis_pole.
+% -x-xx
+tp :- s(S1, -), o(ID, S1, S2, S3, S4, S5), s(S2, x), s(S3, ' '), s(S4, x), s(S5, x),
+      mapuj_pole(x, S3),
+      retract(s(S3, ' ')), assert(s(S3, x)),
+      vyhra(x, VS),
+      write(VS), write([S3, '-x-xx']), nl, vypis_pole.
+% -xx-x
+tp :- s(S1, -), o(ID, S1, S2, S3, S4, S5), s(S2, x), s(S3, x), s(S4, ' '), s(S5, x),
+      mapuj_pole(x, S4),
+      retract(s(S4, ' ')), assert(s(S4, x)),
+      vyhra(x, VS),
+      write(VS), write([S4, '-xx-x']), nl, vypis_pole.
+% blokovani
+% -ooo-
+tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, o), s(S3, o), s(S4, o), s(S5, ' '),
+      mapuj_pole(x, S5),
+      retract(s(S5, ' ')), assert(s(S5, x)),
+      vyhra(x, VS),
+      write(VS), write([S5, '-ooo-']), nl, vypis_pole.
+% o-o-o
+tp :- s(S1, o), o(ID, S1, S2, S3, S4, S5), s(S2, ' '), s(S3, o), s(S4, ' '), s(S5, o),
+      mapuj_pole(x, S4),
+      retract(s(S4, ' ')), assert(s(S4, x)),
+      vyhra(x, VS),
+      write(VS), write([S4, 'o-o-o']), nl, vypis_pole.
+% oo-o-
+tp :- s(S1, o), o(ID, S1, S2, S3, S4, S5), s(S2, o), s(S3, ' '), s(S4, o), s(S5, ' '),
+      mapuj_pole(x, S3),
+      retract(s(S3, ' ')), assert(s(S3, x)),
+      vyhra(x, VS),
+      write(VS), write([S3, 'oo-o-']), nl, vypis_pole.
+% o-oo-
+tp :- s(S1, o), o(ID, S1, S2, S3, S4, S5), s(S2, ' '), s(S3, o), s(S4, o), s(S5, ' '),
+      mapuj_pole(x, S2),
+      retract(s(S2, ' ')), assert(s(S2, x)),
+      vyhra(x, VS),
+      write(VS), write([S2, 'o-oo-']), nl, vypis_pole.
+% -o-oo
+tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, o), s(S3, ' '), s(S4, o), s(S5, o),
+      mapuj_pole(x, S3),
+      retract(s(S3, ' ')), assert(s(S3, x)),
+      vyhra(x, VS),
+      write(VS), write([S3, '-o-oo']), nl, vypis_pole.
+% -oo-o
+tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, o), s(S3, o), s(S4, ' '), s(S5, o),
+      mapuj_pole(x, S4),
+      retract(s(S4, ' ')), assert(s(S4, x)),
+      vyhra(x, VS),
+      write(VS), write([S4, '-oo-o']), nl, vypis_pole.
 % kriz
 tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, x), s(S3, ' '), s(S4, x), s(S5, ' '),
       s(S6, ' '), S1 \= S6, o(ID2, S6, S2, S7, S8, S9), s(S7, x), s(S8, x), s(S9, ' '),
@@ -317,12 +386,103 @@ tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, x), s(S3, ' '), s(S4, x), s(S
       retract(s(S3, ' ')), assert(s(S3, x)),
       vyhra(x, VS),
       write(VS), write([S3, 'kriz']), nl, vypis_pole.
-% nahod tah
-tp :- s(Souradnice, ' '),
-      mapuj_pole(x, Souradnice),
-      retract(s(Souradnice, ' ')), assert(s(Souradnice, x)),
+% -x-x-
+tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, x), s(S3, ' '), s(S4, x), s(S5, ' '),
+      mapuj_pole(x, S3),
+      retract(s(S3, ' ')), assert(s(S3, x)),
       vyhra(x, VS),
-      write(VS), write([Souradnice, 'nahod tah']), nl, vypis_pole.
+      write(VS), write([S3, '-x-x-']), nl, vypis_pole.
+% x-x--
+tp :- s(S1, x), o(ID, S1, S2, S3, S4, S5), s(S2, ' '), s(S3, x), s(S4, ' '), s(S5, ' '),
+      mapuj_pole(x, S2),
+      retract(s(S2, ' ')), assert(s(S2, x)),
+      vyhra(x, VS),
+      write(VS), write([S2, 'x-x--']), nl, vypis_pole.
+% --x-x
+tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, ' '), s(S3, x), s(S4, ' '), s(S5, x),
+      mapuj_pole(x, S4),
+      retract(s(S4, ' ')), assert(s(S4, x)),
+      vyhra(x, VS),
+      write(VS), write([S4, '--x-x']), nl, vypis_pole.
+% --xx-
+tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, ' '), s(S3, x), s(S4, x), s(S5, ' '),
+      mapuj_pole(x, S2),
+      retract(s(S2, ' ')), assert(s(S2, x)),
+      vyhra(x, VS),
+      write(VS), write([S2, '--xx-']), nl, vypis_pole.
+% -xx--
+tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, x), s(S3, x), s(S4, ' '), s(S5, ' '),
+      mapuj_pole(x, S4),
+      retract(s(S4, ' ')), assert(s(S4, x)),
+      vyhra(x, VS),
+      write(VS), write([S4, '-xx--']), nl, vypis_pole.
+% blokovani
+% -o-o-
+tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, o), s(S3, ' '), s(S4, o), s(S5, ' '),
+      mapuj_pole(x, S3),
+      retract(s(S3, ' ')), assert(s(S3, x)),
+      vyhra(x, VS),
+      write(VS), write([S3, '-o-o-']), nl, vypis_pole.
+% o-o--
+tp :- s(S1, o), o(ID, S1, S2, S3, S4, S5), s(S2, ' '), s(S3, o), s(S4, ' '), s(S5, ' '),
+      mapuj_pole(x, S2),
+      retract(s(S2, ' ')), assert(s(S2, x)),
+      vyhra(x, VS),
+      write(VS), write([S2, 'o-o--']), nl, vypis_pole.
+% --o-o
+tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, ' '), s(S3, o), s(S4, ' '), s(S5, o),
+      mapuj_pole(x, S4),
+      retract(s(S4, ' ')), assert(s(S4, x)),
+      vyhra(x, VS),
+      write(VS), write([S4, '--o-o']), nl, vypis_pole.
+% --oo-
+tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, ' '), s(S3, o), s(S4, o), s(S5, ' '),
+      mapuj_pole(x, S2),
+      retract(s(S2, ' ')), assert(s(S2, x)),
+      vyhra(x, VS),
+      write(VS), write([S2, '--oo-']), nl, vypis_pole.
+% -oo--
+tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, o), s(S3, o), s(S4, ' '), s(S5, ' '),
+      mapuj_pole(x, S4),
+      retract(s(S4, ' ')), assert(s(S4, x)),
+      vyhra(x, VS),
+      write(VS), write([S4, '-oo--']), nl, vypis_pole.
+% --x--
+tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, ' '), s(S3, x), s(S4, ' '), s(S5, ' '),
+      mapuj_pole(x, S4),
+      retract(s(S4, ' ')), assert(s(S4, x)),
+      vyhra(x, VS),
+      write(VS), write([S4, '--x--']), nl, vypis_pole.
+% -x---
+tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, x), s(S3, ' '), s(S4, ' '), s(S5, ' '),
+      mapuj_pole(x, S3),
+      retract(s(S3, ' ')), assert(s(S3, x)),
+      vyhra(x, VS),
+      write(VS), write([S3, '-x---']), nl, vypis_pole.
+% ---x-
+tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, ' '), s(S3, ' '), s(S4, x), s(S5, ' '),
+      mapuj_pole(x, S3),
+      retract(s(S3, ' ')), assert(s(S3, x)),
+      vyhra(x, VS),
+      write(VS), write([S3, '---x-']), nl, vypis_pole.
+% _-xo_
+tp :- s(S1, _), o(ID, S1, S2, S3, S4, S5), s(S2, ' '), s(S3, x), s(S4, o), s(S5, _),
+      mapuj_pole(x, S2),
+      retract(s(S2, ' ')), assert(s(S2, x)),
+      vyhra(x, VS),
+      write(VS), write([S2, '_-xo_']), nl, vypis_pole.
+% _ox-_
+tp :- s(S1, _), o(ID, S1, S2, S3, S4, S5), s(S2, o), s(S3, x), s(S4, ' '), s(S5, _),
+      mapuj_pole(x, S4),
+      retract(s(S4, ' ')), assert(s(S4, x)),
+      vyhra(x, VS),
+      write(VS), write([S4, '_ox-_']), nl, vypis_pole.
+% nahod tah
+tp :- s(S, ' '),
+      mapuj_pole(x, S),
+      retract(s(S, ' ')), assert(s(S, x)),
+      vyhra(x, VS),
+      write(VS), write([S, 'nahod tah']), nl, vypis_pole.
 
 
 % ZPETNE PREHRANI HRY

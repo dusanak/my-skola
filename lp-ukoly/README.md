@@ -1,5 +1,13 @@
 # LP
 ## Prolog
-To load a script in Prolog into memory use command
-
+To load a script in Prolog into memory:
     swipl -s <FILENAME>.pl
+
+To generate a new map:
+    generuj_pole([5,6,7,8,9,0,1,2,3,4],[5,6,7,8,9,0,1,2,3,4]).
+
+To do a random move:
+    tp.
+
+To react to an enemy move [X, Y]:
+    tah([X, Y]), nl, tp.
