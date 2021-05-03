@@ -221,6 +221,7 @@ zrus(S) :- retract(s(S, _)), assert(s(S, ' ')),
 % hraje pocitac
 % --------------------
 %vitezstvi
+
 % -xxxx
 tp :- s(S1, ' '), o(ID, S1, S2, S3, S4, S5), s(S2, x), s(S3, x), s(S4, x), s(S5, x),
       mapuj_pole(x, S1),
@@ -477,6 +478,18 @@ tp :- s(S1, _), o(ID, S1, S2, S3, S4, S5), s(S2, o), s(S3, x), s(S4, ' '), s(S5,
       retract(s(S4, ' ')), assert(s(S4, x)),
       vyhra(x, VS),
       write(VS), write([S4, '_ox-_']), nl, vypis_pole.
+% _-x__
+tp :- s(S1, _), o(ID, S1, S2, S3, S4, S5), s(S2, ' '), s(S3, x), s(S4, _), s(S5, _),
+      mapuj_pole(x, S2),
+      retract(s(S2, ' ')), assert(s(S2, x)),
+      vyhra(x, VS),
+      write(VS), write([S2, '_-x__']), nl, vypis_pole.
+% __x-_
+tp :- s(S1, _), o(ID, S1, S2, S3, S4, S5), s(S2, _), s(S3, x), s(S4, ' '), s(S5, _),
+      mapuj_pole(x, S4),
+      retract(s(S4, ' ')), assert(s(S4, x)),
+      vyhra(x, VS),
+      write(VS), write([S4, '__x-_']), nl, vypis_pole.
 % nahod tah
 tp :- s(S, ' '),
       mapuj_pole(x, S),
