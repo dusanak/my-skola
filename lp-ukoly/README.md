@@ -12,3 +12,6 @@ To do a random move:
 
 To react to an enemy move [X, Y]:
     tah([X, Y]), nl, tp.
+
+To save game:
+    tell('./hra.txt'),listing(tah(_,_,_)),told.
