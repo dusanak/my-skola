@@ -1,0 +1,5 @@
+<input type="hidden" name="securityToken" value="([^"]+)" />
+
+${__time(yyyy-MM-dd-HH-mm,)}_${email_random}
+
+
