@@ -11,7 +11,7 @@ int main() {
     int number_of_running_processes = 0;
     while (true) {
         while (number_of_running_processes < NUMBER_OF_PROCESSES) {
-            int random_number = rand() % 15;
+            int random_number = rand() % 20;
 
             number_of_running_processes += 1;
             int pid = fork();
@@ -20,6 +20,8 @@ int main() {
                 return childProcess(random_number);
             }
         }
+
+        sleep(1);
         
         int status, pid;
         while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
