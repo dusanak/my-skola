@@ -18,7 +18,7 @@ int main() {
     }
 
     if (getpid() != parent_pid) {
-        sleep(5);
+        sleep(10);
         return 0;
     }
 
