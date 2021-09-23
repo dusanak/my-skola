@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Person edit</title>
+</head>
+<body>
+    <span th:text="${firstPerson.firstName}">First person</span>
+    <form action="@{save}" th:object="${person}">
+        <input >
+
+    </form>
+</body>
+</html>
