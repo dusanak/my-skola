@@ -8,7 +8,7 @@ import (
 	"modernc.org/mathutil"
 )
 
-const MAX_POSITIONS = 11
+const MAX_POSITIONS = 10
 const MAX_GOROUTINES = 1 * 10e5
 
 type Result struct {
@@ -187,13 +187,13 @@ func main() {
 		fmt.Println(v)
 	}*/
 
-	/* shortest_path, shortest_distance := shortestPathBruteForce(&distance_matrix)
+	shortest_path, shortest_distance := shortestPathBruteForce(&distance_matrix)
 	fmt.Println("Brute force")
 	fmt.Println(shortest_path)
-	fmt.Println(shortest_distance) */
+	fmt.Println(shortest_distance)
 
-	result := shortestPathBruteForceWithGoroutines(&distance_matrix)
+	/*result := shortestPathBruteForceWithGoroutines(&distance_matrix)
 	fmt.Println("Brute force w/ Goroutines")
 	fmt.Println(result.path)
-	fmt.Println(result.length)
+	fmt.Println(result.length)*/
 }
