@@ -5,9 +5,11 @@
 int main() {
     char znaky[] = {'-', '\\', '|', '/'};
     int counter = 0;
+    setvbuf(stdout, nullptr, _IONBF, 0);
+
     while (1) {
         printf("%c\r", znaky[(counter++) % 4]);
-        fflush(stdout);
+        // fflush(stdout);
         usleep(500000); // 500 ms
     }
 

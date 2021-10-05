@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <errno.h>
 
 void intercept(int sig);
 
@@ -17,14 +18,17 @@ int main() {
     alarm(5);
 
     printf("Enter text:\n");
-    scanf("%s", text);
-
-    printf("%s\n", text);
+    int x = scanf("%s", text);
+    if (x == EOF) {
+        printf("Error number: %d\n", errno);
+    } else {
+        printf("%s\n", text);
+    }
 
     return 0;
 }
 
 void intercept(int sig) {
     printf("Time's up!\n");
-    exit(0);
+    //exit(0);
 }
