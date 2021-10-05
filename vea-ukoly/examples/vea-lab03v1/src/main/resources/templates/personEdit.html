@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+
+  <head>
+    <title>Person edit</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  </head>
+
+  <body>
+	<span th:text="${firstPerson.firstName}" ></span>
+	<form th:action="@{save}" th:object="${person}">
+		<input type="text" th:field="*{firstName}"/><span th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}"></span>
+		<input type="text" th:field="*{lastName}"/>
+		<input type="text" th:field="*{dayOfBirth}"/>
+		<input type="submit" value="Save">
+	
+	</form>
+  	
+  </body>
+
+</html>

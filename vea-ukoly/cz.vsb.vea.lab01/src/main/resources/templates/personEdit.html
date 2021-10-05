@@ -1,14 +1,20 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Person edit</title>
-</head>
-<body>
-    <span th:text="${firstPerson.firstName}">First person</span>
-    <form action="@{save}" th:object="${person}">
-        <input >
-
+    <head>
+        <meta charset="UTF-8">
+        <title>Person edit</title>
+    </head>
+    <body>
+    <form th:action="@{save}" action="save" th:object="${person}">
+        <input type="text" th:field="*{firstName}" />
+        <span th:if="${#fields.hasErrors('firstName')}"
+              th:errors="*{firstName}">error</span>
+        <input type="text" th:field="*{lastName}" />
+        <input type="text" th:field="*{dayOfBirth}" />
+        <span th:if="${#fields.hasErrors('dayOfBirth')}"
+              th:errors="*{dayOfBirth}">error</span>
+        <input type="submit" value="Save" />
     </form>
-</body>
+
+    </body>
 </html>

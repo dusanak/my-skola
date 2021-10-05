@@ -1,32 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Person list</title>
-</head>
-<body>
+    <head>
+        <meta charset="UTF-8">
+        <title>Person list</title>
+    </head>
+    <body>
 
-<span th:text="${firstPerson.firstName}">First person</span>
+    <span th:text="${firstPerson.firstName}">First person</span>
 
-<table>
-    <thead>
-        <tr>
-            <td>First name</td>
-            <td>Last name</td>
-            <td>Day of Birth</td>
-            <td>Age</td>
-        </tr>
-    </thead>
-    <tbody>
-        <tr th:each="person: ${persons}">
-            <td th:text="${person.firstName}">First name</td>
-            <td th:text="${person.lastName}">Last name</td>
-            <td th:text="${person.dayOfBirth}">1. 1. 2020</td>
-            <td th:text="${person.age}">1</td>
-            <td>Button</td>
-        </tr>
-    </tbody>
-</table>
+    <table>
+        <thead>
+            <tr>
+                <td>First name</td>
+                <td>Last name</td>
+                <td>Day of Birth</td>
+                <td>Age</td>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="person,iter: ${persons}">
+                <td th:text="${person.firstName}">First name</td>
+                <td th:text="${person.lastName}">Last name</td>
+                <td th:text="${person.dayOfBirth}">1. 1. 2020</td>
+                <td th:text="${person.age}">1</td>
+                <td>
+                    <a th:href="@{editPerson(index=${iter.index})}" href="editPerson?index=0">Edit 1</a>
+                    <a th:href="@{editPerson/{index}(index=${iter.index})}" href="editPerson/0">Edit 2</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
 
-</body>
+    </body>
 </html>

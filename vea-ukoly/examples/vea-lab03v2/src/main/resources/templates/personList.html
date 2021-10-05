@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+
+  <head>
+    <title>Person list</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  </head>
+
+  <body>
+  
+  <span th:text="${firstPerson.firstName}"></span>
+  <table>
+  	<thead>
+  		<tr>
+  			<th>First name</th>
+  			<th>Last name</th>
+  			<th>Day of Birth</th>
+  			<th>Age</th>
+  			<th>Actions</th>
+  		</tr>
+  	</thead>
+  	<tbody>
+  		<tr th:each="person,iter :${persons}">
+  			<td th:text="${person.firstName}" >aa</td>
+  			<td th:text="${person.lastName}" >bb</td>
+  			<td th:text="${person.dayOfBirth}" >111</td>
+  			<td th:text="${person.age}" >10</td>
+  			<td>
+  				<a th:href="@{edit(index=${iter.index})}" href="edit?index=0">Edit 1</a>
+  				<a th:href="@{edit/{index}(index=${iter.index})}" href="edit/0">Edit 2</a>
+  			</td>
+  		</tr>
+  	</tbody>
+  </table>
+  	
+  </body>
+
+</html>
