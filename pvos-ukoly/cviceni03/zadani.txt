@@ -1,0 +1,4 @@
+1. Budeme stridat znaky - / | \ abychom udelali primitivni vrtulku. Pouzit printf a fflush. Stdout bez bufferu. Je treba \r aby se vracel kurzor na zacatek radku.
+2. Potomci posilaji SIGCHLD kdyz skonci. Ten se ovsem muze ztratit takze informaci bude mene nez s vyuzitim funkce wait. Pocitat pocet ukoncenych potomku pomoci "wait". Pocitat pocet ukoncenych potomku pomoci signalu. Kolem tisice potomku za vterinu by se mela cisla rozchazet. 
+3. Vytvorit cca 5 potomku a pomoci SIGSTOP a SIGCONT je budeme stopovat a spoustet. Staci while(1) {printf("%d, %d\n"), getpid(), random_number);}
+4. Pomoci 'alarm' si nastavime casovy limit pro zadani textu. 
