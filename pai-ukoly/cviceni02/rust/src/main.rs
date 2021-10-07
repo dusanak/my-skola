@@ -8,7 +8,7 @@ use std::thread;
 use itertools::Itertools;
 
 const MAX_POSITIONS: usize = 12;
-const MAX_THREADS: usize = 1;
+const MAX_THREADS: usize = 2;
 
 struct Point(f32, f32);
 
@@ -47,9 +47,9 @@ fn brute_force_tsp_w_threads(distance_matrix: Arc<Vec<Vec<f32>>>) -> (Vec<usize>
     let mut handles = vec![];
 
     for _ in 0..MAX_THREADS {
+        let distance_matrix = Arc::clone(&distance_matrix);
         let shared_queue = Arc::clone(&shared_queue);
         let tx = tx.clone();
-        let distance_matrix = Arc::clone(&distance_matrix);
         let handle = thread::spawn(move || {
             loop {
                 let permutation;
@@ -61,7 +61,7 @@ fn brute_force_tsp_w_threads(distance_matrix: Arc<Vec<Vec<f32>>>) -> (Vec<usize>
                 let permutation = match permutation {
                     Some(x) => x,
                     None => {
-                        println!("Zzzzzz... {:?}", thread::current().id());
+                        //println!("Zzzzzz... {:?}", thread::current().id());
                         thread::sleep(Duration::from_millis(500));
                         continue
                     }
@@ -85,17 +85,21 @@ fn brute_force_tsp_w_threads(distance_matrix: Arc<Vec<Vec<f32>>>) -> (Vec<usize>
     }
     drop(tx);
     
-    let start = Instant::now();
-    for permutation in (0..distance_matrix.len()).permutations(distance_matrix.len()) {
-        let mut queue = shared_queue.lock().unwrap();
-        (*queue).push_back(Some(permutation));        
-    }
-    let duration = start.elapsed();
-    println!("Execution time new permutations: {:?}", duration);
+    {
+        let distance_matrix = Arc::clone(&distance_matrix);
+        let shared_queue = Arc::clone(&shared_queue);
+        let handle = thread::spawn(move || {
+            for permutation in (0..distance_matrix.len()).permutations(distance_matrix.len()) {
+                let mut queue = shared_queue.lock().unwrap();
+                (*queue).push_back(Some(permutation));        
+            }
 
-    for _ in 0..MAX_THREADS {
-        let mut queue = shared_queue.lock().unwrap();
-        (*queue).push_back(None);       
+            for _ in 0..MAX_THREADS {
+                let mut queue = shared_queue.lock().unwrap();
+                (*queue).push_back(None);       
+            }
+        });
+        handles.push(handle);
     }
 
     let mut shortest_path: Vec<usize> = vec![];
