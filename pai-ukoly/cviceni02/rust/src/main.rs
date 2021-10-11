@@ -52,32 +52,39 @@ fn brute_force_tsp_w_threads(distance_matrix: Arc<Vec<Vec<f32>>>) -> (Vec<usize>
         let tx = tx.clone();
         let handle = thread::spawn(move || {
             loop {
-                let permutation;
+                let mut permutation_queue = VecDeque::new();
                 {
                     let mut queue = shared_queue.lock().unwrap();
-                    permutation = (*queue).pop_front();
+                    //println!("Consumer lock");
+
+                    let mut counter = 0;
+                    while counter < 10 {
+                        match (*queue).pop_front() {
+                            None => {
+                                break;
+                            },
+                            Some(x) => match x {
+                                None => return,
+                                Some(y) => permutation_queue.push_back(y),
+                            },
+                        };
+                        counter += 1;
+                    }
                 }
 
-                let permutation = match permutation {
-                    Some(x) => x,
-                    None => {
-                        //println!("Zzzzzz... {:?}", thread::current().id());
-                        thread::sleep(Duration::from_millis(500));
-                        continue
-                    }
-                };
-                
-                match permutation {
-                    None => return,
-                    Some(permutation) => {
-                        let mut current_shortest_distance = 0.0;
-                        for position in 0..permutation.len() - 1 {
-                            current_shortest_distance += distance_matrix[permutation[position]][permutation[position + 1]];
-                        }
-                        current_shortest_distance += distance_matrix[permutation[permutation.len() - 1]][permutation[0]];
+                if permutation_queue.is_empty() {
+                    //println!("Zzzzzz");
+                    thread::sleep(Duration::from_millis(500));
+                }
 
-                        tx.send((permutation, current_shortest_distance)).unwrap();
+                for permutation in permutation_queue {      
+                    let mut current_shortest_distance = 0.0;
+                    for position in 0..permutation.len() - 1 {
+                        current_shortest_distance += distance_matrix[permutation[position]][permutation[position + 1]];
                     }
+                    current_shortest_distance += distance_matrix[permutation[permutation.len() - 1]][permutation[0]];
+
+                    tx.send((permutation, current_shortest_distance)).unwrap();
                 }
             } 
         });
@@ -90,6 +97,7 @@ fn brute_force_tsp_w_threads(distance_matrix: Arc<Vec<Vec<f32>>>) -> (Vec<usize>
         let shared_queue = Arc::clone(&shared_queue);
         let handle = thread::spawn(move || {
             for permutation in (0..distance_matrix.len()).permutations(distance_matrix.len()) {
+                //println!("Producer lock");
                 let mut queue = shared_queue.lock().unwrap();
                 (*queue).push_back(Some(permutation));        
             }
@@ -106,6 +114,7 @@ fn brute_force_tsp_w_threads(distance_matrix: Arc<Vec<Vec<f32>>>) -> (Vec<usize>
     let mut shortest_distance = f32::MAX;
 
     for msg in rx {
+        //println!("{:?}", msg.0);
         if msg.1 < shortest_distance {
             shortest_path = msg.0;
             shortest_distance = msg.1;
