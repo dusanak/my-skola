@@ -1,0 +1,3 @@
+Select cas pocita, neblokujici a poll si musime pocitat sami. Poll sam nesnizuje timeout.
+Podle jednoduchosti select > neblokujici > poll.
+Pokud do timeoutu nedopisu, timeout to prerusi.
