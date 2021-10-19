@@ -25,12 +25,12 @@ int main()
     sa.sa_sigaction = sigio;
     sa.sa_flags = SA_SIGINFO;
     sigemptyset( &sa.sa_mask );
+    sigaction( SIGIO, &sa, nullptr );
 
 
     for (int i = 0; i < NUMBER_OF_FORKS; i++) {
         int data_pipe[ 2 ];
         pipe( data_pipe );
-        int fd = data_pipe[ 0 ];
 
         if ( fork() == 0 )
         {
@@ -44,12 +44,10 @@ int main()
             }
         }
 
-        sigaction( SIGIO, &sa, nullptr );
-
-        int flg = fcntl( fd, F_GETFL );
-        fcntl( fd, F_SETFL, flg | O_ASYNC );
-        fcntl( fd, F_SETSIG, SIGIO );
-        fcntl( fd, F_SETOWN, getpid() );
+        int flg = fcntl( data_pipe[ 0 ], F_GETFL );
+        fcntl( data_pipe[ 0 ], F_SETFL, flg | O_ASYNC );
+        fcntl( data_pipe[ 0 ], F_SETSIG, SIGIO );
+        fcntl( data_pipe[ 0 ], F_SETOWN, getpid() );
     }
 
     while( 1 ) wait( nullptr );
