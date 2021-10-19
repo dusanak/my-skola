@@ -56,7 +56,7 @@ int main() {
         ret = select( max + 1, &read_only, nullptr, nullptr, &tout);
 
         if (ret == 0) { printf("Nuda\n"); }
-        else { printf("tout: %d:%06d\n", tout.tv_sec, tout.tv_usec); }
+        else { printf("tout: %ld:%06ld\n", tout.tv_sec, tout.tv_usec); }
 
         if (FD_ISSET(pipe1[0], &read_only)) {
             ret = read(pipe1[0], buff, sizeof(buff));

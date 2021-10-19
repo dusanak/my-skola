@@ -1,3 +1,10 @@
 Select cas pocita, neblokujici a poll si musime pocitat sami. Poll sam nesnizuje timeout.
 Podle jednoduchosti select > neblokujici > poll.
 Pokud do timeoutu nedopisu, timeout to prerusi.
+
+Feedback k cviceni04
+memcpy na konci je sebevrazda pokud si nekontroluju delku bufferu do ktereho zapisuju, brat toto v potaz
+nezahazovat '\n', je to nejaka hodnota co jsem nacetl tak ji vzit v potaz
+vymyslet nejaky test, pomalu treba posilat data a nacitat je
+readline by mel brat i prazdny radek tj. jen \n
+pridat tam buffer, viz poznamky v Kelvinu
