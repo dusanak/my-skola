@@ -1,0 +1,3 @@
+Pojmenovanou rouru je treba otevrit z obou koncu nez zacne fungovat. Roura se v pameti vytvari az v momente kdy ji otevreme.
+
+mknod [name_of_roura] p a mkfifo [name_of_roura] jsou ekvivalentni volani.
