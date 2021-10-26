@@ -5,12 +5,14 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <poll.h>
+#include <string.h>
 
-#define MAX_LENGTH 5
+#define MAX_LENGTH 3
+#define BUFFER_SIZE 1024
 #define MAX_NUMBER 666
 
 int fill_data(int* data) {
-    int length = rand() % (MAX_LENGTH - 1);
+    int length = rand() % MAX_LENGTH;
     int sum = 0;
 
     for (int i = 0; i < length; i++) {
@@ -20,25 +22,10 @@ int fill_data(int* data) {
 
     data[length] = sum;
     if ((rand() % 13) == 0) {
-        data[length + 1] = -data[length + 1];
+        data[length] = -data[length];
     }
 
     return length + 1;
-}
-
-int num_arr_length_w_spaces(int* num_arr, int length) {
-    length = 0;
-    for (int i = 0; i < length; i++) {
-        if (num_arr[i] < 0) {
-            length += 1;
-        }
-
-        length += (num_arr[i] / 10) + 1; 
-
-        length += 1;
-    }
-
-    return length;
 }
 
 int main() {
@@ -47,22 +34,19 @@ int main() {
 
     while ( 1 ) {
         int random_data[MAX_LENGTH];
+        char string_repr[BUFFER_SIZE];
         int length = fill_data(random_data);
 
-        int str_length = num_arr_length_w_spaces(random_data, length);
-        char* string_repr = (char *)malloc(str_length * sizeof(char));
-
         int pos = 0;
-        for (int i = 0; i < length; i++) {
+        for (int i = 0; i < length - 1; i++) {
             int len = sprintf(string_repr + pos, "%d ", random_data[i]);
             pos += len;
         }
-        //string_repr[pos] = '\n';
+        sprintf(string_repr + pos, "%d", random_data[length - 1]);
 
         printf("%s\n", string_repr);
-        write(fd, string_repr, str_length);
-
-        free(string_repr); 
+        write(fd, string_repr, strlen(string_repr) + 1);
+ 
         usleep(1000000); // 1s
     }
 
