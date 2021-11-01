@@ -1,6 +1,6 @@
 package cz.vsb.vea.final_project.repositories;
 
-import cz.vsb.vea.final_project.entities.User;
+import cz.vsb.vea.final_project.entities.Person;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
@@ -14,37 +14,40 @@ import java.sql.Statement;
 import java.util.List;
 
 @Repository
-public class UserRepository {
+public class PersonRepository {
     private JdbcTemplate jdbcTemplate;
-    private SimpleJdbcInsert userInsert;
+    private SimpleJdbcInsert personInsert;
 
     @Autowired
     public void setDataSource(DataSource dataSource) {
         jdbcTemplate = new JdbcTemplate(dataSource);
-        userInsert = new SimpleJdbcInsert(dataSource).withTableName("User").usingGeneratedKeyColumns("id")
+        personInsert = new SimpleJdbcInsert(dataSource).withTableName("Person").usingGeneratedKeyColumns("id")
                 .usingColumns("name");
     }
 
     @PostConstruct
     public void init() {
         try (Statement stm = jdbcTemplate.getDataSource().getConnection().createStatement()) {
-            stm.executeUpdate("CREATE TABLE User (" + "id INT NOT NULL auto_increment," + " name varchar(255), " + " PRIMARY KEY (id)" + ");");
+            stm.execute("CREATE TABLE IF NOT EXISTS Person("
+                    + "id SERIAL PRIMARY KEY,"
+                    + "name varchar(255) NOT NULL"
+                    + ");");
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    public User getUser(long id) {
-        return jdbcTemplate.queryForObject("select * from User where id = ?", new UserMapper(), id);
+    public Person getPerson(long id) {
+        return jdbcTemplate.queryForObject("select * from Person where id = ?", new PersonMapper(), id);
     }
 
-    public List<User> getAllUsers() {
-        return jdbcTemplate.query("select * from User", new UserMapper());
+    public List<Person> getAllPersons() {
+        return jdbcTemplate.query("select * from Person", new PersonMapper());
     }
 
-    public void save(User user) {
-        if (user.getId() == 0) {
-            userInsert.execute(new BeanPropertySqlParameterSource(user));
+    public void save(Person person) {
+        if (person.getId() == 0) {
+            personInsert.execute(new BeanPropertySqlParameterSource(person));
         } else {
             // update
         }

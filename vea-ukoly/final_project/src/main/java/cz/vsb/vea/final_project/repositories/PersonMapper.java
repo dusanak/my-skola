@@ -1,16 +1,16 @@
 package cz.vsb.vea.final_project.repositories;
 
-import cz.vsb.vea.final_project.entities.User;
+import cz.vsb.vea.final_project.entities.Person;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class UserMapper implements RowMapper<User> {
+public class PersonMapper implements RowMapper<Person> {
 
     @Override
-    public User mapRow(ResultSet rs, int index) throws SQLException {
-        return new User(
+    public Person mapRow(ResultSet rs, int index) throws SQLException {
+        return new Person(
                 rs.getLong("id"),
                 rs.getString("name")
         );

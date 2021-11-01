@@ -1,13 +1,13 @@
 package cz.vsb.vea.final_project.entities;
 
-public class User {
+public class Person {
     long id;
     String name;
 
-    public User() {
+    public Person() {
     }
 
-    public User(long id, String name) {
+    public Person(long id, String name) {
         this.id = id;
         this.name = name;
     }
