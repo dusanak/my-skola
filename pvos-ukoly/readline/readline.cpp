@@ -60,7 +60,7 @@ int readline(int fd, void *buf, size_t len, int us_tout) {
             }
         }
 
-        printf("%d, %d\n", i, diff.tv_sec * 1000000 + diff.tv_usec);
+        //printf("%d, %d\n", i, diff.tv_sec * 1000000 + diff.tv_usec);
     }
     
     if ((i == (len - 2)) && (internal_buf[len - 2] != '\0')) {
@@ -69,13 +69,16 @@ int readline(int fd, void *buf, size_t len, int us_tout) {
 
     memset(buf, 0, BUFFER_SIZE);
     memcpy(buf, internal_buf, i * sizeof(char));
+
+    free(internal_buf);
+
     return i;
 }
 
 int main() {
-    char text_buffer[1024];
+    char text_buffer[BUFFER_SIZE];
 
-    readline(0, text_buffer, 32, 10000000);
+    readline(0, text_buffer, BUFFER_SIZE, 10000000); // 10 s
 
     printf("%s\n", text_buffer);
 
