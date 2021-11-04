@@ -21,7 +21,7 @@ int fill_data(int* data) {
     }
 
     data[length] = sum;
-    if ((rand() % 13) == 0) {
+    if ((rand() % 3) == 0) {
         data[length] = -data[length];
     }
 

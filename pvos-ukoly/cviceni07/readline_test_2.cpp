@@ -6,9 +6,10 @@
 #include <fcntl.h>
 #include <poll.h>
 #include <string.h>
+#include <errno.h>
 #include <sys/time.h>
 
-#define BUFFER_SIZE 128
+#define BUFFER_SIZE 16
 
 int readline(int fd, void *buf, size_t len, int us_tout) {
     char* internal_buf = (char*)malloc(sizeof(char) * len);
@@ -30,51 +31,39 @@ int readline(int fd, void *buf, size_t len, int us_tout) {
         gettimeofday(&current, nullptr);
 
         if (timercmp(&current, &end, >=)) {
-            // printf ( "Timeout\n" );
             free(internal_buf);
             return -1;
         }
 
         timersub(&end, &current, &diff);
 
-        int ret = poll(&pfd, 1, diff.tv_sec * 1000000 + diff.tv_usec);
+        int ret = poll(&pfd, 1, (diff.tv_sec * 1000) + (diff.tv_usec / 1000));
 
         if ( ret == 0 ) { 
-            // printf ( "Timeout\n" );
             free(internal_buf);
+            errno = ETIME;
             return -1;
         }
 
-        if ( pfd.revents & POLLIN )
-        {
-            // printf("Reading\n");
+        if (pfd.revents & (POLLIN | POLLHUP)) {
             ret = read(fd, internal_buf + i, 1);
 
             if (ret == 0) { // EOF
-                // printf("EOF - Char: %c: %d\n", internal_buf[i], (int)internal_buf[i]);
                 internal_buf[i] = '\0';
                 break;
             }
 
             if (internal_buf[i] == '\0') {
-                // printf("End of string\n");
                 break;
             }
 
             if (internal_buf[i] == '\n') {
-                // printf("End of line\n");
                 internal_buf[i] = '\0';
                 break;
             }
         }
-
-        //printf("%d, %d\n", i, diff.tv_sec * 1000000 + diff.tv_usec);
     }
     
-    /*if ((i == (len - 2)) && (internal_buf[len - 2] != '\0')) {
-        internal_buf[len - 1] = '\0';
-    }*/
-
     internal_buf[len - 1] = '\0';
 
     memset(buf, 0, len);
@@ -85,28 +74,22 @@ int readline(int fd, void *buf, size_t len, int us_tout) {
 }
 
 int main() {
-    char text_buffer[BUFFER_SIZE];
-
-    int fd = open("./test_file.txt", O_RDONLY);
-
-    while (readline(fd, text_buffer, BUFFER_SIZE, 10000000) > 0) { // 10 s
-        printf("%s\n", text_buffer);
+    char buf[BUFFER_SIZE];
+    int fd = 0;
+    int timeout = 5000000; // 10s
+    while ( 1 ) {
+        int ret = readline( fd, buf, sizeof( buf ), timeout);
+        if ( ret < 0 ) {
+            if (errno == ETIME) {
+                printf("Timeout!\n");
+            } else {
+                break;
+            }
+        }
+        if ( ret == 0 ) break;
+        write( 1, buf, ret );
+        sleep(1);
     }
-
-    close(fd);
-
-    /*readline(fd, text_buffer, BUFFER_SIZE, 10000000); // 10 s
-    printf("%s\n", text_buffer);*/
-
-    /*for (int i = 0; i < 10; i++) {
-    readline(0, text_buffer, BUFFER_SIZE, 10000000); // 10 s
-    printf("%s\n", text_buffer);
-    }*/
-
-    /*for (size_t i = 0; i < strlen(text_buffer) + 1; i++) {
-        printf("%c: %d, ", text_buffer[i], (int)text_buffer[i]);
-    }
-    printf("\n");*/
 
     return 0;
 }

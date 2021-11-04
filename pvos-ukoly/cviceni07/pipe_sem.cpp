@@ -8,7 +8,7 @@
 #include <vector>
 
 #define BUF_SIZE 4
-#define NUM_OF_PRODUCERS 1
+#define NUM_OF_PRODUCERS 4
 
 int space_sem[2];
 int full_sem[2];
