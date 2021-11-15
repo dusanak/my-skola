@@ -1,8 +1,21 @@
 package cz.vsb.vea.final_project.entities;
 
+import javax.persistence.*;
+
+@Entity
+@Table(name = "person")
 public class Person {
+    @Id
+    @GeneratedValue (strategy = GenerationType.AUTO)
+    @Column (name = "person_id")
     long id;
+
+    @Column (name = "name")
     String name;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "city_id", nullable = false)
+    City city;
 
     public Person() {
     }
