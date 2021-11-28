@@ -1,7 +1,0 @@
-server:
-  port : 8081
-spring:
-  messages:
-    basename: aaa
-  thymeleaf:
-    cache: false
