@@ -14,7 +14,7 @@ import java.sql.Statement;
 import java.util.List;
 
 @Repository
-public class PersonRepository {
+public class AccountRepository {
     private JdbcTemplate jdbcTemplate;
     private SimpleJdbcInsert personInsert;
 
@@ -38,11 +38,11 @@ public class PersonRepository {
     }
 
     public Person getPerson(long id) {
-        return jdbcTemplate.queryForObject("select * from Person where id = ?", new PersonMapper(), id);
+        return jdbcTemplate.queryForObject("select * from Person where id = ?", new PatientMapper(), id);
     }
 
     public List<Person> getAllPersons() {
-        return jdbcTemplate.query("select * from Person", new PersonMapper());
+        return null;
     }
 
     public void save(Person person) {

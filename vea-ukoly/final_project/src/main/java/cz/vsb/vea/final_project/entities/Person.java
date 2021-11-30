@@ -1,43 +1,65 @@
 package cz.vsb.vea.final_project.entities;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "person")
+@Inheritance(strategy = InheritanceType.JOINED)
 public class Person {
     @Id
     @GeneratedValue (strategy = GenerationType.AUTO)
     @Column (name = "person_id")
-    long id;
+    private Long id;
 
-    @Column (name = "name")
-    String name;
+    @Column (name = "first_name")
+    private String firstName;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "city_id", nullable = false)
-    City city;
+    @Column (name = "last_name")
+    private String lastName;
+
+    @Column (name = "date_of_birth")
+    private LocalDate dateOfBirth;
 
     public Person() {
     }
 
-    public Person(long id, String name) {
+    public Person(Long id, String firstName, String lastName, LocalDate dateOfBirth) {
         this.id = id;
-        this.name = name;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.dateOfBirth = dateOfBirth;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
     }
 }

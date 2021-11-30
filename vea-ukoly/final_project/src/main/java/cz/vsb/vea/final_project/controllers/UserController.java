@@ -1,7 +1,7 @@
 package cz.vsb.vea.final_project.controllers;
 
 import cz.vsb.vea.final_project.entities.Person;
-import cz.vsb.vea.final_project.repositories.PersonRepository;
+import cz.vsb.vea.final_project.repositories.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,21 +15,21 @@ import java.util.List;
 public class UserController {
 
     @Autowired
-    PersonRepository personRepository;
+    AccountRepository accountRepository;
 
     @GetMapping("/get")
     public Person getUser(long id) {
-        return personRepository.getPerson(id);
+        return accountRepository.getPerson(id);
     }
 
     @PutMapping("/add")
     public void addUser(Person person) {
-        personRepository.save(person);
+        accountRepository.save(person);
     }
 
     @GetMapping("/getAll")
     public List<Person> getAllUsers() {
-        return personRepository.getAllPersons();
+        return accountRepository.getAllPersons();
     }
 
 }
