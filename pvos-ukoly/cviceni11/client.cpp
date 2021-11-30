@@ -171,7 +171,7 @@ int main( int t_narg, char **t_args )
     log_msg( LOG_INFO, "Server IP: '%s'  port: %d",
              inet_ntoa( l_cl_addr.sin_addr ), ntohs( l_cl_addr.sin_port ) );
 
-    log_msg( LOG_INFO, "Enter 'close' to close application." );
+    log_msg( LOG_INFO, "Enter '>' to close application." );
 
     // list of fd sources
     pollfd l_read_poll[ 2 ];
@@ -199,13 +199,14 @@ int main( int t_narg, char **t_args )
             else
                 log_msg( LOG_DEBUG, "Read %d bytes from stdin.", l_len );
 
-            // send data to server
+            // send OOB to close
             char *l_p = l_buf;
             if ( l_buf[ 0 ] == '>' )
             {
                 send( l_sock_server, l_buf, 1, MSG_OOB );
                 l_p++;
                 l_len--;
+                break;
             }
 
             // send data to server

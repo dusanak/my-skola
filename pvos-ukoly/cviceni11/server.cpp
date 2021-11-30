@@ -98,69 +98,22 @@ void help( int t_narg, char **t_args )
 
 //***************************************************************************
 
-struct thread_struct {
-    int l_sock_client;
-    sockaddr_in l_srv_addr;
-};
-
-int l_sock_listen;
-std::vector<thread_struct> threads;
-sem_t mutex; /* controls access to critical region */
-
-void add_thread(thread_struct _struct) {
-    sem_wait(&mutex);
-
-    threads.push_back(_struct);
-
-    sem_post(&mutex);
-
-    return;
-}
-
-void remove_thread(int l_sock_client) {
-    sem_wait(&mutex);
-
-    for (std::vector<thread_struct>::iterator i = threads.begin(); i != threads.end(); ++i) {
-        int _l_sock_client = (*i).l_sock_client;
-
-        if(_l_sock_client == l_sock_client) {
-            threads.erase(i);
-            break;
-        }
-    }
-
-    sem_post(&mutex);
-
-    return;
-}
-
-void *connection_handler(void *args) {
-    thread_struct *_struct = (thread_struct *)args;
-    int l_sock_client = (*_struct).l_sock_client;
-    sockaddr_in l_srv_addr = (*_struct).l_srv_addr;
-    
+void *client_handler(int sock_pair) {    
     // list of fd sources
-    pollfd l_read_poll[ 1 ];
+    std::vector<pollfd> l_read_poll;
 
-    l_read_poll[ 0 ].fd = l_sock_client;
-    l_read_poll[ 0 ].events = POLLIN;
+    pollfd sock_p;
+    sock_p.fd = sock_pair;
+    sock_p.events = POLLIN; 
 
-    uint l_lsa = sizeof( l_srv_addr );
-    // my IP
-    getsockname( l_sock_client, ( sockaddr * ) &l_srv_addr, &l_lsa );
-    log_msg( LOG_INFO, "My IP: '%s'  port: %d",
-                        inet_ntoa( l_srv_addr.sin_addr ), ntohs( l_srv_addr.sin_port ) );
-    // client IP
-    getpeername( l_sock_client, ( sockaddr * ) &l_srv_addr, &l_lsa );
-    log_msg( LOG_INFO, "Client IP: '%s'  port: %d",
-                        inet_ntoa( l_srv_addr.sin_addr ), ntohs( l_srv_addr.sin_port ) );
+    l_read_poll.push_back(sock_p);
 
-    while ( 1  )
+    while ( 1 )
     { // communication
         char l_buf[ 256 ];
 
         // select from fds
-        int l_poll = poll( l_read_poll, 2, -1 );
+        int l_poll = poll( &l_read_poll[0], l_read_poll.size(), -1 );
 
         if ( l_poll < 0 )
         {
@@ -168,45 +121,99 @@ void *connection_handler(void *args) {
             exit( 1 );
         }
 
-        // data from client?
         if ( l_read_poll[ 0 ].revents & POLLIN )
         {
-            // read data from socket
-            int l_len = read( l_sock_client, l_buf, sizeof( l_buf ) );
-            if ( !l_len )
-            {
-                log_msg( LOG_DEBUG, "Client closed socket!" );
-                close( l_sock_client );
-                break;
-            }
-            else if ( l_len < 0 )
-                log_msg( LOG_DEBUG, "Unable to read data from client." );
-            else
-                log_msg( LOG_DEBUG, "Read %d bytes from client.", l_len );
+            msghdr msg;
+            msg.msg_name = nullptr;
+            msg.msg_namelen = 0;
+        
+            int recvpid;
+            iovec ivec;
+            ivec.iov_base = &recvpid;
+            ivec.iov_len = sizeof( recvpid );
 
-            // close request?
-            if ((!strncasecmp( l_buf, "close", strlen( STR_CLOSE ))))
+            msg.msg_iov = &ivec;
+            msg.msg_iovlen = 1;
+
+            char msgbuf[ CMSG_SPACE( sizeof( int ) ) ];
+            cmsghdr *cmsg = ( cmsghdr * ) msgbuf;
+            cmsg->cmsg_len = CMSG_LEN( sizeof( int ) );
+            
+            msg.msg_control = cmsg;
+            msg.msg_controllen = CMSG_SPACE( sizeof( int ) );
+            
+            msg.msg_flags = 0;
+
+            int ret = recvmsg( l_read_poll[ 0 ].fd, &msg, 0 );
+            if ( ret < 0 )
+                printf( "recvmsg error %d (%s)\n", errno, strerror( errno ) );
+
+            int fd = * ( int * ) CMSG_DATA( cmsg );
+
+            printf( "(%d) received fd %d\n", recvpid, fd );
+
+            pollfd new_client;
+            new_client.fd = fd;
+            new_client.events = POLLIN | POLLPRI;
+            l_read_poll.push_back(new_client);
+        }
+
+        for (size_t i = 1; i < l_read_poll.size(); i++) {
+            // data from client?
+            int l_sock_client = l_read_poll[ i ].fd;
+            if ( l_read_poll[ i ].revents & POLLPRI )
             {
-                log_msg( LOG_INFO, "Client sent 'close' request to close connection." );
+                char oob_msg;
+                int l_ret = recv( l_sock_client, &oob_msg, 1, MSG_OOB );
+                if ( l_ret <= 0 )
+                    log_msg( LOG_ERROR, "OOB recv failed.\n" );
+                else
+                    printf( "OOB %c\n", oob_msg );
+                    
+                log_msg( LOG_INFO, "Client sent 'close' OOB request to close connection." );
                 close( l_sock_client );
-                remove_thread(l_sock_client);
+                l_read_poll.erase(l_read_poll.begin() + i);
                 log_msg( LOG_INFO, "Connection closed." );
-                break;
             }
 
-            // display on stdout
-            l_len = write( STDOUT_FILENO, l_buf, l_len );
-            if ( l_len < 0 )
-                log_msg( LOG_ERROR, "Unable to write to stdout." );
+            if ( l_read_poll[ i ].revents & POLLIN )
+            {
+                // read data from socket
+                int l_len = read( l_sock_client, l_buf, sizeof( l_buf ) );
+                if ( !l_len )
+                {
+                    log_msg( LOG_DEBUG, "Client closed socket!" );
+                    close( l_sock_client );
+                    break;
+                }
+                else if ( l_len < 0 )
+                    log_msg( LOG_DEBUG, "Unable to read data from client." );
+                else
+                    log_msg( LOG_DEBUG, "Read %d bytes from client.", l_len );
 
-            // rozoslanie prijatej spravy vsetkym ostatnym klientom
-            for (std::vector<thread_struct>::iterator i = threads.begin(); i != threads.end(); ++i) {
-                int _l_sock_client = (*i).l_sock_client;
+                // close request?
+                if ((!strncasecmp( l_buf, "close", strlen( STR_CLOSE ))))
+                {
+                    log_msg( LOG_INFO, "Client sent 'close' request to close connection." );
+                    close( l_sock_client );
+                    l_read_poll.erase(l_read_poll.begin() + i);
+                    log_msg( LOG_INFO, "Connection closed." );
+                }
 
-                if(_l_sock_client != l_sock_client) {
-                    l_len = write( _l_sock_client, l_buf, l_len );
-                    if ( l_len < 0 )
-                        log_msg( LOG_ERROR, "Unable to write data to stdout." );
+                // display on stdout
+                l_len = write( STDOUT_FILENO, l_buf, l_len );
+                if ( l_len < 0 )
+                    log_msg( LOG_ERROR, "Unable to write to stdout." );
+
+                // sending received message to all other clients
+                for (auto client: l_read_poll) {
+                    int _l_sock_client = client.fd;
+
+                    if(_l_sock_client != l_sock_client) {
+                        l_len = write( _l_sock_client, l_buf, l_len );
+                        if ( l_len < 0 )
+                            log_msg( LOG_ERROR, "Unable to write data to stdout." );
+                    }
                 }
             }
         }
@@ -222,6 +229,7 @@ int main( int t_narg, char **t_args )
     if ( t_narg <= 1 ) help( t_narg, t_args );
 
     int l_port = 0;
+    int l_sock_listen;
 
     // parsing arguments
     for ( int i = 1; i < t_narg; i++ )
@@ -283,92 +291,105 @@ int main( int t_narg, char **t_args )
     }
 
     log_msg( LOG_INFO, "Enter 'quit' to quit server." );
-
-    sem_init(&mutex, 0, 1);
-    pthread_t thread_id = 0;
     // go!
-    while ( 1 )
-    {
-        int l_sock_client = -1;
 
-        // list of fd sources
-        pollfd l_read_poll[ 2 ];
+    int spair[ 2 ];
+    socketpair( AF_UNIX, SOCK_STREAM, 0, spair );
 
-        l_read_poll[ 0 ].fd = STDIN_FILENO;
-        l_read_poll[ 0 ].events = POLLIN;
-        l_read_poll[ 1 ].fd = l_sock_listen;
-        l_read_poll[ 1 ].events = POLLIN;
-
-        while ( 1 ) // wait for new client
+    if (fork() > 0) {
+        while ( 1 )
         {
-            // select from fds
-            int l_poll = poll( l_read_poll, 2, -1 );
+            int l_sock_client = -1;
 
-            if ( l_poll < 0 )
+            // list of fd sources
+            pollfd l_read_poll[ 2 ];
+
+            l_read_poll[ 0 ].fd = STDIN_FILENO;
+            l_read_poll[ 0 ].events = POLLIN;
+            l_read_poll[ 1 ].fd = l_sock_listen;
+            l_read_poll[ 1 ].events = POLLIN;
+
+            while ( 1 ) // wait for new client
             {
-                log_msg( LOG_ERROR, "Function poll failed!" );
-                exit( 1 );
-            }
+                // select from fds
+                int l_poll = poll( l_read_poll, 2, -1 );
 
-            if ( l_read_poll[ 0 ].revents & POLLIN )
-            { // data on stdin
-                char buf[ 128 ];
-                int len = read( STDIN_FILENO, buf, sizeof( buf) );
-                if ( len < 0 )
+                if ( l_poll < 0 )
                 {
-                    log_msg( LOG_DEBUG, "Unable to read from stdin!" );
+                    log_msg( LOG_ERROR, "Function poll failed!" );
                     exit( 1 );
                 }
 
-                log_msg( LOG_DEBUG, "Read %d bytes from stdin" );
-                // request to quit?
-                if ( !strncmp( buf, STR_QUIT, strlen( STR_QUIT ) ) )
-                {
-                    log_msg( LOG_INFO, "Request to 'quit' entered.");
-                    close( l_sock_listen );
-                    exit( 0 );
-                }
-
-                // poslanie spravy zadanej na server vsetkym clientom
-                for (std::vector<thread_struct>::iterator i = threads.begin(); i != threads.end(); ++i) {
-                    int _l_sock_client = (*i).l_sock_client;
-                    int l_len = write(_l_sock_client, buf, len);
-                    if ( l_len < 0 )
-                        log_msg( LOG_ERROR, "Unable to write data to stdout." );
-                }
-            }
-
-            if ( l_read_poll[ 1 ].revents & POLLIN )
-            { // new client?
-                sockaddr_in l_rsa;
-                int l_rsa_size = sizeof( l_rsa );
-                // new connection
-                l_sock_client = accept( l_sock_listen, ( sockaddr * ) &l_rsa, ( socklen_t * ) &l_rsa_size );
-                if ( l_sock_client == -1 )
-                {
-                        log_msg( LOG_ERROR, "Unable to accept new client." );
-                        close( l_sock_listen );
+                if ( l_read_poll[ 0 ].revents & POLLIN )
+                { // data on stdin
+                    char buf[ 128 ];
+                    int len = read( STDIN_FILENO, buf, sizeof( buf) );
+                    if ( len < 0 )
+                    {
+                        log_msg( LOG_DEBUG, "Unable to read from stdin!" );
                         exit( 1 );
+                    }
+
+                    log_msg( LOG_DEBUG, "Read %d bytes from stdin" );
+                    // request to quit?
+                    if ( !strncmp( buf, STR_QUIT, strlen( STR_QUIT ) ) )
+                    {
+                        log_msg( LOG_INFO, "Request to 'quit' entered.");
+                        close( l_sock_listen );
+                        exit( 0 );
+                    }
                 }
 
-                thread_struct _struct;
-                _struct.l_sock_client = l_sock_client;
-                _struct.l_srv_addr = l_srv_addr;
+                if ( l_read_poll[ 1 ].revents & POLLIN )
+                { // new client?
+                    sockaddr_in l_rsa;
+                    int l_rsa_size = sizeof( l_rsa );
+                    // new connection
+                    l_sock_client = accept( l_sock_listen, ( sockaddr * ) &l_rsa, ( socklen_t * ) &l_rsa_size );
+                    if ( l_sock_client == -1 )
+                    {
+                            log_msg( LOG_ERROR, "Unable to accept new client." );
+                            close( l_sock_listen );
+                            exit( 1 );
+                    }
 
-                int ret = pthread_create( &thread_id, NULL, connection_handler, (void*) &_struct);
-                if(ret < 0) {
-                    perror("Problem pri vytvarani threadu!\n");
-                    return 1;
+                    msghdr msg;
+                    msg.msg_name = nullptr;
+                    msg.msg_namelen = 0;
+                
+                    int mypid = getpid();
+                    iovec ivec;
+                    ivec.iov_base = &mypid;
+                    ivec.iov_len = sizeof( mypid );
+
+                    msg.msg_iov = &ivec;
+                    msg.msg_iovlen = 1;
+
+                    char msgbuf[ CMSG_SPACE( sizeof( int ) ) ];
+                    cmsghdr *cmsg = ( cmsghdr * ) msgbuf;
+                    cmsg->cmsg_len = CMSG_LEN( sizeof( int ) );
+                    cmsg->cmsg_level = SOL_SOCKET;
+                    cmsg->cmsg_type = SCM_RIGHTS;
+                    * ( int * ) CMSG_DATA( cmsg ) = l_sock_client;
+
+                    msg.msg_control = cmsg;
+                    msg.msg_controllen = CMSG_SPACE( sizeof( int ) );
+                    
+                    msg.msg_flags = 0;
+
+                    printf( "(%d) sending descriptor %d\n", getpid(), l_sock_client );
+
+                    int ret = sendmsg( spair[ 1 ], &msg, 0 );
+                    if ( ret < 0 )
+                        printf( "sendmsg error %d (%s)\n", errno, strerror( errno ) );
                 }
-                add_thread(_struct);
 
-                break;
-            }
-
-        } // while wait for client
-        thread_id++;
-        
-    } // while ( 1 )
+            } // while wait for client
+            
+        } // while ( 1 )
+    } else {
+        client_handler(spair[0]);
+    }
 
     return 0;
 }
