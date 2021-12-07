@@ -1,0 +1,72 @@
+
+#vyroba self signed certifikatu
+
+#vytvoreni klice s heslem
+openssl genrsa -des3 -out my.key 2048
+
+#vytvoreni klice bez hesla
+openssl genrsa -out my.key 2048
+
+#odstraneni hesla
+openssl rsa -in my.key -out my.key
+
+#zobrazeni klice
+openssl rsa -text -in my.key
+
+ ##vystupem je my.key
+
+#vystaveni zadosti o certifikat s dotazy
+openssl req -new -key my.key -out my.csr 
+
+#vystaveni zadosti o certifikat bez dotazu
+openssl req -new -key my.key -subj "/C=CZ/L=Ostrava/O=VSB-TUO/CN=myserver.vsb.cz" -out my.csr 
+
+#vystaveni zadosti o certifikat dle konfiguracniho souboru bez dotazu
+openssl req -new -key my.key -config req.conf -out my.csr 
+
+#vystaveni zadosti o certifikat dle konfiguracniho souboru i vygenerovanim noveho klice
+rm my.key
+#zadost se jen zobrazi
+openssl req -new -keyout my.key -config req.conf
+
+#zadost se ulozi
+openssl req -new -keyout my.key -config req.conf -out my.csr
+
+#zobrazeni zadosti
+openssl req -text -in my.csr
+
+ ##vystupem je zadost my.csr (a my.key)
+
+#vytvoreni self signed certifikatu z my.csr a my.key
+openssl req -x509 -in my.csr -key my.key -out my.crt
+
+#vytvoreni self signed certifikatu jen s pouzitim klice bez zadosti
+openssl req -x509 -in my.csr -key my.key -out my.crt
+
+#vytvoreni self signed certifikatu bez zadosti s vygenerovanim noveho klice (3 kroky v jednom)
+openssl req -x509 -days 365 -newkey rsa:2048 -nodes -keyout my.key -new -config req.conf -out my.crt
+
+ ##vystupem je my.crt (a my.key)
+
+#vytvoreni vlastni certifikacni autority
+openssl req -x509 -newkey rsa:2048 -nodes -keyout myCA.key -subj "/C=CZ/L=Ostrava/O=CA-VSB-TUO/" -out myCA.pem
+
+ ##vystupem je myCA.key a myCA.pem
+
+#podepsani pozadavku certifikacni autoritou 
+openssl x509 -req -days 365 -in my.csr -CA myCA.pem -CAkey myCA.key -CAcreateserial -out my.crt
+
+ ##vystupem je my.crt
+
+#vytvoreni ssl spojeni
+openssl s_server -accept 3333 -cert my.crt -key my.key
+openssl s_client -connect localhost:3333
+
+#vytvoreni ssl spojeni bez certifikatu
+openssl s_server -accept 3333 -nocert -cipher "DH:ADH:ECDH@SECLEVEL=0"
+openssl s_client -connect localhost:3333 -cipher "ALL@SECLEVEL=0"
+
+#vytvoreni ssl spojeni bez certifikatu pro starsi openssl
+openssl s_server -accept 3333 -nocert -cipher DH,ADH,ECDH
+openssl s_client -connect localhost:3333
+
