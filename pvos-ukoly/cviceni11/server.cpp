@@ -113,7 +113,7 @@ void *client_handler(int sock_pair) {
         char l_buf[ 256 ];
 
         // select from fds
-        int l_poll = poll( &l_read_poll[0], l_read_poll.size(), -1 );
+        int l_poll = poll( l_read_poll.data(), l_read_poll.size(), -1 );
 
         if ( l_poll < 0 )
         {
@@ -176,7 +176,7 @@ void *client_handler(int sock_pair) {
                 log_msg( LOG_INFO, "Connection closed." );
             }
 
-            if ( l_read_poll[ i ].revents & POLLIN )
+            else if ( l_read_poll[ i ].revents & POLLIN )
             {
                 // read data from socket
                 int l_len = read( l_sock_client, l_buf, sizeof( l_buf ) );
