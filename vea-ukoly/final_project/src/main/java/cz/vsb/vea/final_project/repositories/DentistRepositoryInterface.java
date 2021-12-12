@@ -5,8 +5,10 @@ import cz.vsb.vea.final_project.entities.Patient;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface DentistRepositoryInterface extends CrudRepository<Dentist, Long> {
-    Dentist findDentistById(Long id);
-    Dentist findDentistByPatientListContains(Patient patient);
+    Optional<Dentist> findDentistById(Long id);
+    Optional<Dentist> findDentistByPatientListContains(Patient patient);
 }

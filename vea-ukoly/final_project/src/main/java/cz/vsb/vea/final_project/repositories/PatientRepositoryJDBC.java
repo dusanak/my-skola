@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @ConditionalOnProperty(
@@ -28,8 +29,13 @@ public class PatientRepositoryJDBC implements PatientRepositoryInterface{
     }
 
     @Override
-    public List<Patient> getAllPatient() {
+    public List<Patient> findAllPatients() {
         return jdbcTemplate.query("select * from patient", new PatientMapper());
+    }
+
+    @Override
+    public List<Patient> findAllPatientsByDentist(long id) {
+        return null;
     }
 
     @Override
@@ -42,7 +48,12 @@ public class PatientRepositoryJDBC implements PatientRepositoryInterface{
     }
 
     @Override
-    public Patient find(long id) {
-        return null;
+    public Optional<Patient> findPatientById(long id) {
+        return Optional.empty();
+    }
+
+    @Override
+    public void delete(Patient patient) {
+
     }
 }

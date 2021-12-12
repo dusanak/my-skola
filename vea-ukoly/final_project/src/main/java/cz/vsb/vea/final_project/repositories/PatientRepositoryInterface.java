@@ -4,10 +4,13 @@ import cz.vsb.vea.final_project.entities.Patient;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PatientRepositoryInterface {
-    public List<Patient> getAllPatient();
-    public Patient save(Patient patient);
-    public Patient find(long id);
+    List<Patient> findAllPatients();
+    List<Patient> findAllPatientsByDentist(long id);
+    Patient save(Patient patient);
+    Optional<Patient> findPatientById(long id);
+    void delete(Patient patient);
 }
