@@ -2,27 +2,23 @@ package cz.vsb.vea.final_project.controllers;
 
 import cz.vsb.vea.final_project.controllers.dto.PatientAdd;
 import cz.vsb.vea.final_project.controllers.dto.PatientUpdate;
-import cz.vsb.vea.final_project.entities.Dentist;
 import cz.vsb.vea.final_project.entities.Patient;
-import cz.vsb.vea.final_project.repositories.DentistRepositoryInterface;
-import cz.vsb.vea.final_project.repositories.PatientRepositoryInterface;
 import cz.vsb.vea.final_project.services.PatientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
 
-@Controller
+@RestController
 @RequestMapping("/patient")
 public class PatientController {
 
     @Autowired
     PatientService patientService;
 
-    @GetMapping("/get")
+    @GetMapping(value = "/get", params = "id")
     public ResponseEntity<Patient> getPatient(Long id) {
         Optional<Patient> patient = patientService.findPatient(id);
         if (patient.isEmpty()) {
@@ -33,8 +29,8 @@ public class PatientController {
     }
 
     @GetMapping("/getAll")
-    public List<Patient> getAllPatients() {
-        return patientService.findAllPatients();
+    public ResponseEntity<List<Patient>> getAllPatients() {
+        return ResponseEntity.ok(patientService.findAllPatients());
     }
 
     @GetMapping(value="/getAllFromDentist", params="dentistId")
@@ -48,8 +44,8 @@ public class PatientController {
         return ResponseEntity.ok(patients.get());
     }
 
-    @PutMapping(value="/add")
-    public ResponseEntity<Patient> addPatient(PatientAdd patientAdd) {
+    @PostMapping(value="/add")
+    public ResponseEntity<Patient> addPatient(@RequestBody PatientAdd patientAdd) {
         Optional<Patient> patient = patientService.addPatient(patientAdd);
 
         if (patient.isEmpty()) {
@@ -60,8 +56,8 @@ public class PatientController {
     }
 
 
-    @PostMapping(value="/update")
-    public ResponseEntity<Patient> updatePatient(PatientUpdate patientUpdate) {
+    @PutMapping(value="/update")
+    public ResponseEntity<Patient> updatePatient(@RequestBody PatientUpdate patientUpdate) {
         Optional<Patient> patient = patientService.updatePatient(patientUpdate);
 
         if (patient.isEmpty()) {

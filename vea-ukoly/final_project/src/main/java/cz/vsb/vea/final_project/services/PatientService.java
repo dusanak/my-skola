@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,7 +38,7 @@ public class PatientService {
     }
 
     public List<Patient> findAllPatients() {
-        return patientRepositoryInterface.findAllPatients();
+        return patientRepositoryInterface.findAll();
     }
 
     public Optional<List<Patient>> findAllPatientsByDentist(Long id) {
@@ -61,13 +62,14 @@ public class PatientService {
         patient.setLastName(patientAdd.getLastName());
         patient.setDateOfBirth(patientAdd.getDateOfBirth());
         patient.setDentist(dentist.get());
+        patient.setAppointmentList(new ArrayList<>());
 
         Patient result = patientRepositoryInterface.save(patient);
 
         dentist.get().getPatientList().add(result);
         dentistRepositoryInterface.save(dentist.get());
 
-        return Optional.of(patient);
+        return Optional.of(result);
     }
 
     public Optional<Patient> updatePatient(PatientUpdate patientUpdate) {
@@ -102,7 +104,7 @@ public class PatientService {
             dentistRepositoryInterface.save(dentist);
         }
 
-        return Optional.of(patient);
+        return Optional.of(result);
     }
 
     public boolean deletePatient(Long id) {

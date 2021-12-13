@@ -1,5 +1,7 @@
 package cz.vsb.vea.final_project.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import javax.persistence.*;
 import java.time.LocalDate;
 
@@ -9,11 +11,13 @@ public class Appointment {
     @EmbeddedId
     private AppointmentKey id;
 
+    @JsonBackReference
     @ManyToOne
     @MapsId("dentistId")
     @JoinColumn(name = "dentist_id")
     private Dentist dentist;
 
+    @JsonBackReference
     @ManyToOne
     @MapsId("patientId")
     @JoinColumn(name = "patient_id")

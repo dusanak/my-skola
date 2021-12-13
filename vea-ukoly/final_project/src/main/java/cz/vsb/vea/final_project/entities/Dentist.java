@@ -1,5 +1,7 @@
 package cz.vsb.vea.final_project.entities;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
@@ -10,8 +12,13 @@ import java.util.List;
 @Entity
 @Table(name = "dentist")
 public class Dentist extends Person {
+    @JsonManagedReference
     @OneToMany(mappedBy = "dentist", cascade = CascadeType.ALL)
     private List<Patient> patientList;
+
+    @JsonManagedReference
+    @OneToMany(mappedBy = "dentist", cascade = CascadeType.ALL)
+    private List<Appointment> appointmentList;
 
     public Dentist() {
     }
@@ -27,5 +34,13 @@ public class Dentist extends Person {
 
     public void setPatientList(List<Patient> patientList) {
         this.patientList = patientList;
+    }
+
+    public List<Appointment> getAppointmentList() {
+        return appointmentList;
+    }
+
+    public void setAppointmentList(List<Appointment> appointmentList) {
+        this.appointmentList = appointmentList;
     }
 }

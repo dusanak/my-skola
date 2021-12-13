@@ -8,7 +8,7 @@ import java.util.Optional;
 
 @Repository
 public interface PatientRepositoryInterface {
-    List<Patient> findAllPatients();
+    List<Patient> findAll();
     List<Patient> findAllPatientsByDentist(long id);
     Patient save(Patient patient);
     Optional<Patient> findPatientById(long id);
