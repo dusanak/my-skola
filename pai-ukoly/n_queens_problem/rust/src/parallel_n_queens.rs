@@ -1,8 +1,11 @@
-use std::collections::VecDeque;
 use std::fmt;
+use std::thread;
+use std::time;
 use std::sync::Arc;
 use std::sync::Mutex;
-use std::thread;
+use std::sync::atomic::{AtomicBool, AtomicU32, AtomicUsize, Ordering};
+
+const LOCAL_STACK_SIZE: usize = 8;
 
 #[derive(Clone)]
 struct ChessBoard {
@@ -93,7 +96,7 @@ impl fmt::Display for ChessBoard {
 
 fn generate_row_variants(
     mut chess_board: ChessBoard,
-    chess_boards: &Arc<Mutex<VecDeque<ChessBoard>>>,
+    chess_boards: &mut Vec<ChessBoard>,
 ) {
     let y = chess_board.queens.len();
 
@@ -105,50 +108,97 @@ fn generate_row_variants(
         let variant = chess_board.clone();
         chess_board.place_queen((x as u32, y as u32));
         {
-            chess_boards.lock().unwrap().push_front(chess_board);
+            chess_boards.push(chess_board);
         }
         chess_board = variant;
     }
 }
 
 pub fn solve_parallel(chess_size: u32, number_of_threads: u32) {
-    let chess_boards: Arc<Mutex<VecDeque<ChessBoard>>> = Arc::new(Mutex::new(VecDeque::new()));
+    let shared_chess_boards: Arc<Mutex<Vec<ChessBoard>>> = Arc::new(Mutex::new(Vec::new()));
 
-    let mut guard = chess_boards.lock().unwrap();
-    guard.push_front(ChessBoard::new(chess_size));
+    let mut guard = shared_chess_boards.lock().unwrap();
+    guard.push(ChessBoard::new(chess_size));
     drop(guard);
 
-    let number_of_solutions: Arc<Mutex<u32>> = Arc::new(Mutex::new(0));
+    let sleeping_threads = Arc::new(AtomicU32::new(0));
+    let is_work_finished = Arc::new(AtomicBool::new(false));
+    
+    let number_of_solutions = Arc::new(AtomicU32::new(0));
+    let max_shared = Arc::new(AtomicUsize::new(0));
 
     let mut handles = Vec::new();
     for _ in 0..number_of_threads {
-        let chess_boards: Arc<Mutex<VecDeque<ChessBoard>>> = Arc::clone(&chess_boards);
-        let number_of_solutions: Arc<Mutex<u32>> = Arc::clone(&number_of_solutions);
+        let shared_chess_boards: Arc<Mutex<Vec<ChessBoard>>> = Arc::clone(&shared_chess_boards);
+        let sleeping_threads = Arc::clone(&sleeping_threads);
+        let is_work_finished = Arc::clone(&is_work_finished);
+        
+        let number_of_solutions = Arc::clone(&number_of_solutions);
+        let max_shared = Arc::clone(&max_shared);
 
-        let handle = thread::spawn(move || loop {
-            let mut guard = chess_boards.lock().unwrap();
-            let chess_board = guard.pop_front();
-            drop(guard);
+        let handle = thread::spawn(move || {
+            let mut local_chess_boards: Vec<ChessBoard> = Vec::new();
+            let mut _counter = 0;
 
-            match chess_board {
-                None => break,
-                Some(chess_board) => {
-                    if chess_board.queens.len() == chess_board.size as usize {
-                        {
-                            *number_of_solutions.lock().unwrap() += 1;
-                            if chess_board.size < 7 {
-                                println!(
-                                    "Solution {}:\n {}",
-                                    *number_of_solutions.lock().unwrap(),
-                                    chess_board
-                                )
-                            };
+            loop {
+                let chess_board = local_chess_boards.pop();
+
+                match chess_board {
+                    None => {
+                        // println!("I am empty! {:?}", thread::current().id());
+                        let mut guard = shared_chess_boards.lock().unwrap();
+                        match guard.pop() {
+                            None => {
+                                // println!("Sleeping {:?}", thread::current().id());
+                                sleeping_threads.fetch_add(1, Ordering::Relaxed);
+                                // println!("Sleeping threads: {}", sleeping_threads.load(Ordering::Relaxed));
+                                drop(guard);
+                                if sleeping_threads.load(Ordering::Relaxed) == number_of_threads || is_work_finished.load(Ordering::Relaxed) {
+                                    // println!("Work finished!! {:?}", thread::current().id());
+                                    is_work_finished.store(true, Ordering::Relaxed);
+                                    break;
+                                }
+                                thread::sleep(time::Duration::from_millis(5));
+                                sleeping_threads.fetch_sub(1, Ordering::Relaxed);
+                            },
+                            Some(chess_board) => {
+                                if guard.len() > max_shared.load(Ordering::Relaxed) {
+                                    // println!("Current max: {}, new max: {}", max_shared.load(Ordering::Relaxed), guard.len());                                               
+                                    max_shared.store(guard.len(), Ordering::Relaxed);
+                                }
+
+                                // println!("Got shared chess board! {:?} Remaining: {}.", thread::current().id(), guard.len());
+                                local_chess_boards.push(chess_board);
+                            }
                         }
                     }
+                    Some(chess_board) => {
+                        _counter += 1;
+                        if chess_board.queens.len() == chess_board.size as usize {
+                            {
+                                number_of_solutions.fetch_add(1, Ordering::Relaxed);
+                                if chess_board.size < 7 {
+                                    println!(
+                                        "Solution {}:\n {}",
+                                        number_of_solutions.load(Ordering::Relaxed),
+                                        chess_board
+                                    )
+                                };
+                            }
+                        }
 
-                    generate_row_variants(chess_board, &chess_boards);
+                        generate_row_variants(chess_board, &mut local_chess_boards);
+                        // println!("Number of local chess boardS {}.", local_chess_boards.len());
+                    }
+                }
+
+                if local_chess_boards.len() > LOCAL_STACK_SIZE {
+                    let mut guard = shared_chess_boards.lock().unwrap();
+                    guard.extend(local_chess_boards.drain(LOCAL_STACK_SIZE..));
+                    // println!("Local stack is full: {}.", local_chess_boards.len())                    
                 }
             }
+            // println!("Thread {:?} is finished! Loop count {}.", thread::current().id(), _counter);
         });
 
         handles.push(handle);
@@ -158,8 +208,7 @@ pub fn solve_parallel(chess_size: u32, number_of_threads: u32) {
         handle.join().unwrap();
     }
 
-    println!(
-        "Number of results: {}",
-        *number_of_solutions.lock().unwrap()
-    );
+    // println!("Max shared items: {}", max_shared.load(Ordering::Relaxed));
+    
+    println!("Number of results: {}", number_of_solutions.load(Ordering::Relaxed));
 }

@@ -17,15 +17,15 @@ fn main() {
     };
 
     let is_parallel: bool = match args.get(3) {
-        None => false,
-        Some(x) => x.parse().unwrap_or(false),
+        None => true,
+        Some(x) => x.parse().unwrap_or(true),
     };
 
     if !is_parallel {
-        println!("Serial solution");
+        println!("Serial solution for {} queens", chess_size);
         serial_n_queens::solve_serial(chess_size);
     } else {
-        println!("Parallel solution");
+        println!("Parallel solution for {} queens using {} threads", chess_size, number_of_threads);
         parallel_n_queens::solve_parallel(chess_size, number_of_threads);
     }
 }
