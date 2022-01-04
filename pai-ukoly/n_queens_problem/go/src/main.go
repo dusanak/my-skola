@@ -24,7 +24,7 @@ func (cs *ChessboardStack) Push(chessboard *ChessBoard) {
 
 func (cs *ChessboardStack) Pop() (ChessBoard, error) {
 	if cs.size == 0 {
-		return ChessBoard{}, errors.New("Stack is empty")
+		return ChessBoard{}, errors.New("stack is empty")
 	} else {
 		result := cs.stack[cs.size]
 		cs.size -= 1
@@ -129,15 +129,26 @@ func (chessboard *ChessBoard) is_diagonal_free(new_queen *Queen) bool {
 	return true
 }
 
-func generate_row_variants(chess_board ChessBoard, stack *ChessboardStack) {
+func solve_serial(chess_board *ChessBoard) int {
 	y := len(chess_board.queens)
+
+	if y == chess_board.size {
+		return 1
+	}
+
+	results := 0
 
 	for x := 0; x < chess_board.size; x++ {
 		if !chess_board.can_place_queen(&Queen{x, y}) {
 			continue
 		}
 
+		new_chess_board := chess_board.DeepCopy()
+		new_chess_board.place_queen(&Queen{x, y})
+		results += solve_serial(&new_chess_board)
 	}
+
+	return results
 }
 
 func main() {
@@ -151,26 +162,7 @@ func main() {
 
 	fmt.Println("N Queens problem solver launched for", chess_board_size, "queens and using", number_of_threads, "threads.")
 
-	chessboard := ChessBoard{4, make([]Queen, 0, 4)}
-	chessboard.place_queen(&Queen{1, 1})
-	chessboard.place_queen(&Queen{1, 2})
-	chessboard.place_queen(&Queen{2, 2})
-	chessboard.place_queen(&Queen{2, 3})
+	result := solve_serial(&ChessBoard{chess_board_size, make([]Queen, 0, chess_board_size)})
 
-	fmt.Println(chessboard)
-
-	chess_boards := []ChessBoard{ChessBoard{chess_board_size, make([]Queen, 0, chess_board_size)}}
-	results := 0
-
-	// TODO Probably replace generate_row_variants
-	// which implies iterative implementation as in Rust
-	// with a recursive divide & conquer approach using goroutines
-	// in a function which generates variants row by row and
-	// calls itself to solve the new variants.
-	// when it gets to number of queens == N
-	// return a number which get summed up in the above function.
-
-	for {
-
-	}
+	fmt.Println("Solutions:", result)
 }
