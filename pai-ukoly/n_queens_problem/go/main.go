@@ -136,7 +136,7 @@ func solve_serial(chess_board *ChessBoard) int {
 		return 1
 	}
 
-	results := 0
+	result := 0
 
 	for x := 0; x < chess_board.size; x++ {
 		if !chess_board.can_place_queen(&Queen{x, y}) {
@@ -145,24 +145,66 @@ func solve_serial(chess_board *ChessBoard) int {
 
 		new_chess_board := chess_board.DeepCopy()
 		new_chess_board.place_queen(&Queen{x, y})
-		results += solve_serial(&new_chess_board)
+		result += solve_serial(&new_chess_board)
 	}
 
-	return results
+	return result
+}
+
+func solve_parallel(chess_board *ChessBoard, result_c chan int) {
+	y := len(chess_board.queens)
+
+	if y == chess_board.size {
+		result_c <- 1
+	}
+
+	running_goroutines := 0
+	new_c := make(chan int)
+
+	for x := 0; x < chess_board.size; x++ {
+		if !chess_board.can_place_queen(&Queen{x, y}) {
+			continue
+		}
+
+		new_chess_board := chess_board.DeepCopy()
+		new_chess_board.place_queen(&Queen{x, y})
+
+		go solve_parallel(&new_chess_board, new_c)
+		running_goroutines += 1
+	}
+
+	result := 0
+
+	for i := 0; i < running_goroutines; i++ {
+		result += <-new_c
+	}
+
+	result_c <- result
 }
 
 func main() {
 	chess_board_size := 4
-	number_of_threads := 1
+	is_parallel := true
 
 	if len(os.Args) > 1 {
 		chess_board_size, _ = strconv.Atoi(os.Args[1])
-		number_of_threads, _ = strconv.Atoi(os.Args[2])
 	}
 
-	fmt.Println("N Queens problem solver launched for", chess_board_size, "queens and using", number_of_threads, "threads.")
+	if len(os.Args) > 2 {
+		is_parallel, _ = strconv.ParseBool(os.Args[2])
+	}
 
-	result := solve_serial(&ChessBoard{chess_board_size, make([]Queen, 0, chess_board_size)})
+	result := 0
+	if !is_parallel {
+		fmt.Println("Serial solution for", chess_board_size, "queens")
+		result = solve_serial(&ChessBoard{chess_board_size, make([]Queen, 0, chess_board_size)})
+	} else {
+		fmt.Println("Parallel solution for", chess_board_size, "queens")
 
-	fmt.Println("Solutions:", result)
+		result_c := make(chan int)
+		go solve_parallel(&ChessBoard{chess_board_size, make([]Queen, 0, chess_board_size)}, result_c)
+		result = <-result_c
+	}
+
+	fmt.Println("Number of results:", result)
 }

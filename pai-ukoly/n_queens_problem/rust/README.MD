@@ -22,11 +22,11 @@ The program has two optional arguments, the first one sets the number of queens 
 All of these examples are run in this directory (`../rust/`).
 
     ./target/release/rust         - runs the release optimised program
-                                    with default values, 4 queens and 1 thread.
+                                    with default values 4 queens and 1 thread.
     ./target/debug/rust 12 4      - runs the debug optimised program for
-                                    12 queens and utilising 4 threads.
+                                    12 queens and utilising 4 threads
 
     cargo run --release 14 8      - builds and runs the code using the 
                                     release optimisations for 14 queens 
-                                    and utilisiing 8 threads.
+                                    and utilising 8 threads
 
