@@ -18,12 +18,15 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <memory.h>
+#include <thread>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+
+#include <vector>
 
 #include <openssl/rsa.h>	   /* SSLeay stuff */
 #include <openssl/crypto.h>
@@ -43,6 +46,8 @@
 #define CHK_SSL(err) if ((err)==-1) { ERR_print_errors_fp(stderr); exit(2); }
 #define eprintf( args... ) fprintf( stderr, ## args )
 
+bool accept_connections = true;
+
 int ssl_readline( SSL *ssl, char *buf, int length )
 {
 	int num = 0;
@@ -54,6 +59,92 @@ int ssl_readline( SSL *ssl, char *buf, int length )
 	}
 	buf[ num ] = 0;
 	return num;
+}
+
+void *ssl_thread( void * thread_arg ) {
+	SSL* ssl = ( SSL * ) thread_arg;
+	int err;
+
+	// /* Get the cipher - opt */
+
+	// printf ("SSL connection using %s\n", SSL_get_cipher (ssl));
+
+	// /* Get client's certificate (note: beware of dynamic allocation) - opt */
+
+	// X509* client_cert = SSL_get_peer_certificate (ssl);
+	// if (client_cert != NULL) {
+	// 	printf ("Client certificate:\n");
+
+	// 	char *str = X509_NAME_oneline (X509_get_subject_name (client_cert), 0, 0);
+	// 	CHK_NULL(str);
+	// 	printf ("\t subject: %s\n", str);
+	// 	OPENSSL_free (str);
+
+	// 	str = X509_NAME_oneline (X509_get_issuer_name  (client_cert), 0, 0);
+	// 	CHK_NULL(str);
+	// 	printf ("\t issuer: %s\n", str);
+	// 	OPENSSL_free (str);
+
+	// 	/* We could do all sorts of certificate verification stuff here before
+	// 	deallocating the certificate. */
+
+	// 	X509_free (client_cert);
+	// } else
+	// 	printf ("Client does not have certificate.\n");
+
+	const char *test_req = "test";
+	const char *test_ack = "ready";
+	int run_test = 1;
+	char buf [4096];
+
+	err = SSL_read( ssl, buf, sizeof( buf ) );					CHK_ERR( err, "Unable get test req" );
+
+	if ( strncmp( buf, test_req, strlen( test_req ) ) )
+	{
+		eprintf( "Bad test req." );
+		run_test = 0;
+	}
+	else
+	{
+		err = SSL_write( ssl, test_ack, strlen( test_ack ) );		CHK_ERR( err, "Unable to send test ack" );
+		printf( "Sent test ack.\n" );
+	}
+
+	/* DATA EXCHANGE - Receive message and send reply. */
+
+	long total_bytes = 0;
+	long num_lines = 0;
+	while ( run_test )
+	{
+		// read one line
+		err = ssl_readline (ssl, buf, sizeof(buf) - 1);					  CHK_SSL(err);
+		if ( err <= 0 ) break;
+
+		total_bytes += err;
+
+		// parse line
+		int tmp, parsed, buf_inx;
+		long sum = 0;
+		sscanf( buf, "(%d)%n", &tmp, &buf_inx );
+		while ( 1 == sscanf( buf + buf_inx, "%d%n", &tmp, &parsed  ) )
+		{
+			sum += tmp;
+			buf_inx += parsed;
+		}
+		sum /= 2;
+
+		// send answer
+		sprintf( buf, "%ld %ld %ld\n", num_lines++, sum, total_bytes );
+		err = SSL_write( ssl, buf, strlen( buf ) );						CHK_SSL(err);
+	}
+
+	/* Clean up. */
+
+	// close (SSL_get_fd(ssl));
+	// SSL_free (ssl);
+
+	printf("Thread %d finished!\n", gettid());
+	return nullptr;
 }
 
 int main ()
@@ -68,6 +159,8 @@ int main ()
 	SSL*	 ssl;
 	X509*	 client_cert;
 	const SSL_METHOD *meth;
+
+	std::vector<pthread_t> threads;
 
 	/* SSL preliminaries. We keep the certificate and key with the context. */
 
@@ -107,102 +200,45 @@ int main ()
 	err = bind(listen_sd, (struct sockaddr*) &sa_serv,
 	 sizeof (sa_serv));					  CHK_ERR(err, "bind");
 
-	/* Receive a TCP connection. */
+	while (accept_connections) {
+		/* Receive a TCP connection. */
 
-	err = listen (listen_sd, 5);					CHK_ERR(err, "listen");
+		err = listen (listen_sd, 1);					CHK_ERR(err, "listen");
+		printf("Listening\n");
 
-	client_len = sizeof(sa_cli);
-	sd = accept (listen_sd, (struct sockaddr*) &sa_cli, &client_len);
-	CHK_ERR(sd, "accept");
-	close (listen_sd);
+		client_len = sizeof(sa_cli);
+		sd = accept (listen_sd, (struct sockaddr*) &sa_cli, &client_len);
+		CHK_ERR(sd, "accept");
+		// close (listen_sd);
 
-	printf ("Connection from %s, port %x\n",
-	inet_ntoa( sa_cli.sin_addr ), sa_cli.sin_port);
+		printf ("Connection from %s, port %x\n",
+		inet_ntoa( sa_cli.sin_addr ), sa_cli.sin_port);
 
-	/* ----------------------------------------------- */
-	/* TCP connection is ready. Do server side SSL. */
+		/* ----------------------------------------------- */
+		/* TCP connection is ready. Do server side SSL. */
 
-	ssl = SSL_new (ctx);						   CHK_NULL(ssl);
-	SSL_set_fd (ssl, sd);
-	err = SSL_accept (ssl);						   CHK_SSL(err);
+		ssl = SSL_new (ctx);						   CHK_NULL(ssl);
+		SSL_set_fd (ssl, sd);
+		err = SSL_accept (ssl);						   CHK_SSL(err);
 
-	/* Get the cipher - opt */
-
-	printf ("SSL connection using %s\n", SSL_get_cipher (ssl));
-
-	/* Get client's certificate (note: beware of dynamic allocation) - opt */
-
-	client_cert = SSL_get_peer_certificate (ssl);
-	if (client_cert != NULL) {
-		printf ("Client certificate:\n");
-
-		char *str = X509_NAME_oneline (X509_get_subject_name (client_cert), 0, 0);
-		CHK_NULL(str);
-		printf ("\t subject: %s\n", str);
-		OPENSSL_free (str);
-
-		str = X509_NAME_oneline (X509_get_issuer_name  (client_cert), 0, 0);
-		CHK_NULL(str);
-		printf ("\t issuer: %s\n", str);
-		OPENSSL_free (str);
-
-		/* We could do all sorts of certificate verification stuff here before
-		deallocating the certificate. */
-
-		X509_free (client_cert);
-	} else
-		printf ("Client does not have certificate.\n");
-
-	const char *test_req = "test";
-	const char *test_ack = "ready";
-	int run_test = 1;
-	char buf [4096];
-
-	err = SSL_read( ssl, buf, sizeof( buf ) );					CHK_ERR( err, "Unable get test req" );
-
-	if ( strncmp( buf, test_req, strlen( test_req ) ) )
-	{
-		eprintf( "Bad test req." );
-		run_test = 0;
-	}
-	else
-	{
-		err = SSL_write( ssl, test_ack, strlen( test_ack ) );		CHK_ERR( err, "Unable to send test ack" );
-		printf( "Sent test ack." );
-	}
-
-	/* DATA EXCHANGE - Receive message and send reply. */
-
-	long total_bytes = 0;
-	long num_lines = 0;
-	while ( run_test )
-	{
-		// read one line
-		err = ssl_readline (ssl, buf, sizeof(buf) - 1);					  CHK_SSL(err);
-		if ( err <= 0 ) break;
-
-		total_bytes += err;
-
-		// parse line
-		int tmp, parsed, buf_inx;
-		long sum = 0;
-		sscanf( buf, "(%d)%n", &tmp, &buf_inx );
-		while ( 1 == sscanf( buf + buf_inx, "%d%n", &tmp, &parsed  ) )
+		pthread_t ssl_tid = 0;
+		if ( !pthread_create( &ssl_tid, NULL, ssl_thread, ssl ) )
 		{
-			sum += tmp;
-			buf_inx += parsed;
+			// ssl_thread_running = 1;
+			printf( "Thread for answers created.\n" );
+			threads.push_back(ssl_tid);
 		}
-		sum /= 2;
-
-		// send answer
-		sprintf( buf, "%ld %ld %ld\n", num_lines++, sum, total_bytes );
-		err = SSL_write( ssl, buf, strlen( buf ) );						CHK_SSL(err);
+		else
+		{
+			eprintf( "Unable to create thread for answers!\n");
+		}
 	}
 
-	/* Clean up. */
+	for (pthread_t thread: threads) {
+		pthread_join( thread, NULL );
+		printf("Thread %ld joined.\n", thread);
+	}
 
-	close (sd);
-	SSL_free (ssl);
 	SSL_CTX_free (ctx);
 }
 /* EOF - ssl_srv.cpp */

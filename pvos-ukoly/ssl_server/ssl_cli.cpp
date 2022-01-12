@@ -161,7 +161,8 @@ void ssl_fork( sockaddr_in *addr, int avg_line_len )
 	srand( getpid() );
 
 	char buf [16384] = "";
-	char line[ avg_line_len * 2 ] = "";
+	char line[ avg_line_len * 2 ];
+	*line = *"";
 	long total_bytes = 0;
 	long num_lines = 0;
 
