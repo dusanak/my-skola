@@ -27,6 +27,7 @@
 #include <netdb.h>
 
 #include <vector>
+#include <signal.h>
 
 #include <openssl/rsa.h>	   /* SSLeay stuff */
 #include <openssl/crypto.h>
@@ -41,9 +42,8 @@
 #define CERTF  HOME "myserver.crt"
 #define KEYF  HOME	"mypriv.pem"
 
-#define CHK_NULL(x) if ((x)==NULL) exit (1)
-#define CHK_ERR(err,s) if ((err)==-1) { perror(s); exit(1); }
-#define CHK_SSL(err) if ((err)==-1) { ERR_print_errors_fp(stderr); exit(2); }
+#define CHK_NULL(x) if ((x)==NULL) { printf("CHK_NULL\n"); exit (1); }
+#define CHK_ERR(err,s) if ((err)==-1) { printf("CHK_ERR\n"); perror(s); exit(1); }
 #define eprintf( args... ) fprintf( stderr, ## args )
 
 bool accept_connections = true;
@@ -117,8 +117,12 @@ void *ssl_thread( void * thread_arg ) {
 	while ( run_test )
 	{
 		// read one line
-		err = ssl_readline (ssl, buf, sizeof(buf) - 1);					  CHK_SSL(err);
-		if ( err <= 0 ) break;
+		err = ssl_readline (ssl, buf, sizeof(buf) - 1);					
+		if ( err <= 0 ) {
+			ERR_print_errors_fp(stderr);
+			printf("Breaking! %d\n", gettid());
+			break;
+		}
 
 		total_bytes += err;
 
@@ -135,7 +139,12 @@ void *ssl_thread( void * thread_arg ) {
 
 		// send answer
 		sprintf( buf, "%ld %ld %ld\n", num_lines++, sum, total_bytes );
-		err = SSL_write( ssl, buf, strlen( buf ) );						CHK_SSL(err);
+		err = SSL_write( ssl, buf, strlen( buf ) );
+		if ( err <= 0 ) {
+			ERR_print_errors_fp(stderr);
+			printf("Breaking! %d\n", gettid());
+			break;
+		}			
 	}
 
 	/* Clean up. */
@@ -151,16 +160,21 @@ int main ()
 {
 	int err;
 	int listen_sd;
-	int sd;
 	struct sockaddr_in sa_serv;
 	struct sockaddr_in sa_cli;
 	socklen_t client_len;
 	SSL_CTX* ctx;
-	SSL*	 ssl;
 	X509*	 client_cert;
 	const SSL_METHOD *meth;
 
 	std::vector<pthread_t> threads;
+
+	// Block SIGPIPE so closing of ssl client doesn't crash program.
+	sigset_t set;
+	sigemptyset(&set);
+	sigaddset(&set, SIGPIPE);
+	if (pthread_sigmask(SIG_BLOCK, &set, NULL) != 0)
+		return -1;
 
 	/* SSL preliminaries. We keep the certificate and key with the context. */
 
@@ -204,10 +218,11 @@ int main ()
 		/* Receive a TCP connection. */
 
 		err = listen (listen_sd, 1);					CHK_ERR(err, "listen");
+		if ((err)==-1) { printf("CHK_ERR\n"); perror("listen"); exit(1); }
 		printf("Listening\n");
 
 		client_len = sizeof(sa_cli);
-		sd = accept (listen_sd, (struct sockaddr*) &sa_cli, &client_len);
+		int sd = accept (listen_sd, (struct sockaddr*) &sa_cli, &client_len);
 		CHK_ERR(sd, "accept");
 		// close (listen_sd);
 
@@ -217,20 +232,22 @@ int main ()
 		/* ----------------------------------------------- */
 		/* TCP connection is ready. Do server side SSL. */
 
-		ssl = SSL_new (ctx);						   CHK_NULL(ssl);
+		SSL* ssl = SSL_new (ctx);						   CHK_NULL(ssl);
+		if ((ssl)==NULL) { printf("CHK_NULL\n"); exit (1); }
 		SSL_set_fd (ssl, sd);
-		err = SSL_accept (ssl);						   CHK_SSL(err);
+		err = SSL_accept (ssl);
+		if ((err)==-1) { printf("CHK_ERR\n"); ERR_print_errors_fp(stderr); exit(2); }
 
 		pthread_t ssl_tid = 0;
 		if ( !pthread_create( &ssl_tid, NULL, ssl_thread, ssl ) )
 		{
 			// ssl_thread_running = 1;
-			printf( "Thread for answers created.\n" );
+			printf( "Thread for client created.\n" );
 			threads.push_back(ssl_tid);
 		}
 		else
 		{
-			eprintf( "Unable to create thread for answers!\n");
+			eprintf( "Unable to create thread for client!\n");
 		}
 	}
 
