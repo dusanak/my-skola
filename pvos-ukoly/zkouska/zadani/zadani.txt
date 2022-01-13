@@ -23,5 +23,3 @@ Kód pro potomka oddělte do samostatné funkce, ať je zřejmé, kdo provádí 
 Dále upravte soketověho klienta tak, aby vykonával "nějakou" činnost a po připojení min. 3 klientů
 k serveru bude zřejmé, že je jejich činnost koordinována semaforem ze serveru.
 Vyzkoučejte i po síti, nejen localhost.
-
-sharememoryopen, truncate, map

@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <wait.h>
+#include <sys/mman.h>
 #include <semaphore.h>
 
 #define STR_CLOSE   "close"
@@ -52,6 +53,8 @@
 #define UNLINk_REQ "UNLINK"
 #define UNLINK_RESP "UNLINK-OK\n"
 #define ERR_RESP "ERR\n"
+
+#define MAX_SEMAPHORES 64
 
 // debug flag
 int g_debug = LOG_INFO;
@@ -110,16 +113,61 @@ void help( int t_narg, char **t_args )
 
 //***************************************************************************
 
-int semaphore_init(const char * name, int val) {
+struct sem_info {
+    char semaphore_name[128];
+    sem_t semaphore;
+};
 
+int* number_of_semaphores;
+sem_info* semaphores;
+
+
+int semaphore_init(const char * name, int val) {
+    for (int i = 0; i < *number_of_semaphores; i++) {
+        if (!strcmp(name, semaphores[i].semaphore_name)) {
+            printf("Semaphore %s exists!\n", name);
+            return 1;
+        }
+    }
+
+    sem_init(&semaphores[*number_of_semaphores].semaphore, 1, val);
+    strcpy(semaphores[*number_of_semaphores].semaphore_name, name);
+
+    *number_of_semaphores += 1;
     return 0;
 }
 
 int semaphore_down(const char * name) {
+    int pos = -1;
+    for (int i = 0; i < *number_of_semaphores; i++) {
+        if (!strcmp(name, semaphores[i].semaphore_name)) {
+            pos = i;
+            break;
+        }
+    }
+    if (pos < 0) {
+        printf("Semaphore %s does not exist!\n", name);
+        return 1;
+    }
+
+    sem_wait(&semaphores[pos].semaphore);
     return 0;
 }
 
 int semaphore_up(const char * name) {
+    int pos = -1;
+    for (int i = 0; i < *number_of_semaphores; i++) {
+        if (!strcmp(name, semaphores[i].semaphore_name)) {
+            pos = i;
+            break;
+        }
+    }
+    if (pos < 0) {
+        printf("Semaphore %s does not exist!\n", name);
+        return 1;
+    }
+
+    sem_post(&semaphores[pos].semaphore);
     return 0;
 }
 
@@ -297,6 +345,19 @@ int main( int t_narg, char **t_args )
     log_msg( LOG_INFO, "Enter 'quit' to quit server." );
 
     int l_sock_client = -1;
+
+    int fd = shm_open( "/semafory_pocet.dat", O_RDWR | O_CREAT, 0600 );
+    ftruncate( fd, 1024 );
+    int len = lseek( fd, 0, SEEK_END );
+    number_of_semaphores = ( int * ) mmap( nullptr, len, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0 );
+    *number_of_semaphores = 0;
+    close( fd );
+
+    fd = shm_open( "/semafory.dat", O_RDWR | O_CREAT, 0600 );
+    ftruncate( fd, 1024 );
+    len = lseek( fd, 0, SEEK_END );
+    semaphores = ( sem_info * ) mmap( nullptr, len, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0 );
+    close( fd );
 
     // list of fd sources
     pollfd l_read_poll;
