@@ -50,7 +50,7 @@
 #define UP_RESP "UP-OK\n"
 #define DOWN_REQ "DOWN"
 #define DOWN_RESP "DOWN-OK\n"
-#define UNLINk_REQ "UNLINK"
+#define UNLINK_REQ "UNLINK"
 #define UNLINK_RESP "UNLINK-OK\n"
 #define ERR_RESP "ERR\n"
 
@@ -173,103 +173,114 @@ int semaphore_up(const char * name) {
 
 
 int fork_server(int l_sock_client) {
-    pollfd l_read_poll;
-
-    l_read_poll.fd = l_sock_client;
-    l_read_poll.events = POLLIN;
-
     while ( 1 )
     { // communication
         char l_buf[ 256 ];
         char name[ 64 ];
 
-        // select from fds
-        int l_poll = poll( &l_read_poll, 1, -1 );
-
-        if ( l_poll < 0 )
+        // read data from socket
+        int l_len = read( l_sock_client, l_buf, sizeof( l_buf ) );
+        if ( !l_len )
         {
-            log_msg( LOG_ERROR, "Function poll failed!" );
-            exit( 1 );
+            log_msg( LOG_DEBUG, "Client closed socket!" );
+            close( l_sock_client );
+            break;
         }
-        // data from client?
-        if ( l_read_poll.revents & POLLIN )
+        else if ( l_len < 0 )
+            log_msg( LOG_DEBUG, "Unable to read data from client." );
+        else
+            log_msg( LOG_DEBUG, "Read %d bytes from client.", l_len );
+
+        // write data from client
+        l_len = write( STDOUT_FILENO, l_buf, l_len );
+        if ( l_len < 0 )
+            log_msg( LOG_ERROR, "Unable to write data to stdout." );
+
+        if (!strncmp(l_buf, INIT_REQ, strlen(INIT_REQ))) 
         {
-            // read data from socket
-            int l_len = read( l_sock_client, l_buf, sizeof( l_buf ) );
-            if ( !l_len )
-            {
-                    log_msg( LOG_DEBUG, "Client closed socket!" );
-                    close( l_sock_client );
-                    break;
+            printf("Init request!\n");
+            
+            int val = -1;
+            sscanf(l_buf, "INIT %s %d\n", name, &val);
+
+            printf("%s: %d\n", name, val);
+
+            semaphore_init(name, val);
+            
+            printf("Sending init response!\n");
+            l_len = write( l_sock_client, INIT_RESP, strlen(INIT_RESP));
+            if ( l_len < 0 ) {
+                log_msg( LOG_ERROR, "Unable to send data to server." );
+                return 1;
             }
-            else if ( l_len < 0 )
-                    log_msg( LOG_DEBUG, "Unable to read data from client." );
             else
-                    log_msg( LOG_DEBUG, "Read %d bytes from client.", l_len );
+                log_msg( LOG_DEBUG, "Sent %d bytes to server.", l_len );
+        }
+        else if (!strncmp(l_buf, DOWN_REQ, strlen(DOWN_REQ)))
+        {
+            printf("Down request!\n");
 
-            // write data from client
-            l_len = write( STDOUT_FILENO, l_buf, l_len );
-            if ( l_len < 0 )
-                    log_msg( LOG_ERROR, "Unable to write data to stdout." );
+            sscanf(l_buf, "DOWN %s\n", name);
 
-            if (!strncmp(l_buf, INIT_REQ, strlen(INIT_REQ))) 
-            {
-                printf("Init request!\n");
-                
-                int val = -1;
-                sscanf(l_buf, "INIT %s %d\n", name, &val);
+            printf("%s\n", name);
 
-                printf("%s: %d\n", name, val);
-
-                semaphore_init(name, val);
-                
-                printf("Sending init response!\n");
-                l_len = write( l_sock_client, INIT_RESP, strlen(INIT_RESP));
-                if ( l_len < 0 ) {
-                    log_msg( LOG_ERROR, "Unable to send data to server." );
-                    return 1;
-                }
-                else
-                    log_msg( LOG_DEBUG, "Sent %d bytes to server.", l_len );
+            semaphore_down(name);
+            
+            printf("Sending down response!\n");
+            l_len = write( l_sock_client, DOWN_RESP, strlen(DOWN_RESP));
+            if ( l_len < 0 ) {
+                log_msg( LOG_ERROR, "Unable to send data to server." );
+                return 1;
             }
-            else if (!strncmp(l_buf, DOWN_REQ, strlen(DOWN_REQ)))
-            {
-                printf("Down request!\n");
+            else
+                log_msg( LOG_DEBUG, "Sent %d bytes to server.", l_len );
+        }
+        else if (!strncmp(l_buf, UP_REQ, strlen(UP_REQ)))
+        {
+            printf("Up request!\n");
 
-                sscanf(l_buf, "DOWN %s\n", name);
+            sscanf(l_buf, "UP %s\n", name);
 
-                printf("%s\n", name);
+            printf("%s\n", name);
 
-                semaphore_down(name);
-                
-                printf("Sending down response!\n");
-                l_len = write( l_sock_client, INIT_RESP, strlen(INIT_RESP));
-                if ( l_len < 0 ) {
-                    log_msg( LOG_ERROR, "Unable to send data to server." );
-                    return 1;
-                }
-                else
-                    log_msg( LOG_DEBUG, "Sent %d bytes to server.", l_len );
+            semaphore_up(name);
+            
+            printf("Sending up response!\n");
+            l_len = write( l_sock_client, UP_RESP, strlen(UP_RESP));
+            if ( l_len < 0 ) {
+                log_msg( LOG_ERROR, "Unable to send data to server." );
+                return 1;
             }
-            else if (!strncmp(l_buf, UP_REQ, strlen(UP_REQ)))
-            {
-                printf("Up request!\n");
+            else
+                log_msg( LOG_DEBUG, "Sent %d bytes to server.", l_len );
+        } else if (!strncmp(l_buf, UNLINK_REQ, strlen(UNLINK_REQ)))
+        {
+            printf("Up request!\n");
 
-                sscanf(l_buf, "UP %s\n", name);
+            sscanf(l_buf, "UP %s\n", name);
 
-                printf("%s\n", name);
+            printf("%s\n", name);
 
-                semaphore_up(name);
-                
-                printf("Sending up response!\n");
-                l_len = write( l_sock_client, INIT_RESP, strlen(INIT_RESP));
-                if ( l_len < 0 ) {
-                    log_msg( LOG_ERROR, "Unable to send data to server." );
-                    return 1;
-                }
-                else
-                    log_msg( LOG_DEBUG, "Sent %d bytes to server.", l_len );
+            semaphore_up(name);
+            
+            printf("Sending up response!\n");
+            l_len = write( l_sock_client, UP_RESP, strlen(UP_RESP));
+            if ( l_len < 0 ) {
+                log_msg( LOG_ERROR, "Unable to send data to server." );
+                return 1;
             }
+            else
+                log_msg( LOG_DEBUG, "Sent %d bytes to server.", l_len );
+        }else {
+            printf("Bad request!\n");
+            printf("Sending err response!\n");
+            l_len = write( l_sock_client, ERR_RESP, strlen(ERR_RESP));
+            if ( l_len < 0 ) {
+                log_msg( LOG_ERROR, "Unable to send data to server." );
+                return 1;
+            }
+            else
+                log_msg( LOG_DEBUG, "Sent %d bytes to server.", l_len );
         }
     } // while communication
 
@@ -359,53 +370,35 @@ int main( int t_narg, char **t_args )
     semaphores = ( sem_info * ) mmap( nullptr, len, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0 );
     close( fd );
 
-    // list of fd sources
-    pollfd l_read_poll;
-
-    l_read_poll.fd = l_sock_listen;
-    l_read_poll.events = POLLIN;
-
     while ( 1 ) // wait for new client
     {
-        // select from fds
-        int l_poll = poll( &l_read_poll, 1, -1 );
-
-        if ( l_poll < 0 )
+        sockaddr_in l_rsa;
+        int l_rsa_size = sizeof( l_rsa );
+        // new connection
+        l_sock_client = accept( l_sock_listen, ( sockaddr * ) &l_rsa, ( socklen_t * ) &l_rsa_size );
+        if ( l_sock_client == -1 )
         {
-            log_msg( LOG_ERROR, "Function poll failed!" );
+            log_msg( LOG_ERROR, "Unable to accept new client." );
+            close( l_sock_listen );
             exit( 1 );
         }
 
-        if ( l_read_poll.revents & POLLIN )
-        { // new client?
-            sockaddr_in l_rsa;
-            int l_rsa_size = sizeof( l_rsa );
-            // new connection
-            l_sock_client = accept( l_sock_listen, ( sockaddr * ) &l_rsa, ( socklen_t * ) &l_rsa_size );
-            if ( l_sock_client == -1 )
-            {
-                    log_msg( LOG_ERROR, "Unable to accept new client." );
-                    close( l_sock_listen );
-                    exit( 1 );
-            }
-
-            int pid = fork();
-            if ( !pid )
-            {
-                fork_server(l_sock_client);
-                exit( 0 );
-            }
-
-            uint l_lsa = sizeof( l_srv_addr );
-            // my IP
-            getsockname( l_sock_client, ( sockaddr * ) &l_srv_addr, &l_lsa );
-            log_msg( LOG_INFO, "My IP: '%s'  port: %d",
-                                inet_ntoa( l_srv_addr.sin_addr ), ntohs( l_srv_addr.sin_port ) );
-            // client IP
-            getpeername( l_sock_client, ( sockaddr * ) &l_srv_addr, &l_lsa );
-            log_msg( LOG_INFO, "Client IP: '%s'  port: %d",
-                                inet_ntoa( l_srv_addr.sin_addr ), ntohs( l_srv_addr.sin_port ) );
+        int pid = fork();
+        if ( !pid )
+        {
+            fork_server(l_sock_client);
+            exit( 0 );
         }
+
+        uint l_lsa = sizeof( l_srv_addr );
+        // my IP
+        getsockname( l_sock_client, ( sockaddr * ) &l_srv_addr, &l_lsa );
+        log_msg( LOG_INFO, "My IP: '%s'  port: %d",
+                            inet_ntoa( l_srv_addr.sin_addr ), ntohs( l_srv_addr.sin_port ) );
+        // client IP
+        getpeername( l_sock_client, ( sockaddr * ) &l_srv_addr, &l_lsa );
+        log_msg( LOG_INFO, "Client IP: '%s'  port: %d",
+                            inet_ntoa( l_srv_addr.sin_addr ), ntohs( l_srv_addr.sin_port ) );
 
     } // while ( 1 )
     // wait for children

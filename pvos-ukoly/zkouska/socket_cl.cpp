@@ -193,12 +193,6 @@ int main( int t_narg, char **t_args )
 
     log_msg( LOG_INFO, "Enter 'close' to close application." );
 
-    // list of fd sources
-    pollfd l_read_poll;
-
-    l_read_poll.fd = l_sock_server;
-    l_read_poll.events = POLLIN;
-
     char l_buf[ 128 ];
     int l_len = -1;
 
@@ -213,34 +207,29 @@ int main( int t_narg, char **t_args )
         else
             log_msg( LOG_DEBUG, "Sent %d bytes to server.", l_len );
 
-        if ( poll( &l_read_poll, 1, -1 ) < 0 ) return 1;
-
-        if ( l_read_poll.revents & POLLIN )
+        // read data from server
+        int l_len = read( l_sock_server, l_buf, sizeof( l_buf ) );
+        if ( !l_len )
         {
-            // read data from server
-            int l_len = read( l_sock_server, l_buf, sizeof( l_buf ) );
-            if ( !l_len )
-            {
-                log_msg( LOG_DEBUG, "Server closed socket." );
-                return 1;
-            }
-            else if ( l_len < 0 )
-                log_msg( LOG_DEBUG, "Unable to read data from server." );
-            else
-                log_msg( LOG_DEBUG, "Read %d bytes from server.", l_len );
-
-            // display on stdout
-            l_len = write( STDOUT_FILENO, l_buf, l_len );
-            if ( l_len < 0 )
-                log_msg( LOG_ERROR, "Unable to write to stdout." );
-
-            // l_buf[l_len] = 0;
-            // if (!strcmp(l_buf, INIT_RESP))
-            //     printf("Correct response!\n");
-
-            // if (!strcmp(l_buf, ERR_RESP))
-            //     printf("Error response!\n");            
+            log_msg( LOG_DEBUG, "Server closed socket." );
+            return 1;
         }
+        else if ( l_len < 0 )
+            log_msg( LOG_DEBUG, "Unable to read data from server." );
+        else
+            log_msg( LOG_DEBUG, "Read %d bytes from server.", l_len );
+
+        // display on stdout
+        l_len = write( STDOUT_FILENO, l_buf, l_len );
+        if ( l_len < 0 )
+            log_msg( LOG_ERROR, "Unable to write to stdout." );
+
+        // l_buf[l_len] = 0;
+        // if (!strcmp(l_buf, INIT_RESP))
+        //     printf("Correct response!\n");
+
+        // if (!strcmp(l_buf, ERR_RESP))
+        //     printf("Error response!\n");            
     }
 
     // go!
@@ -249,6 +238,7 @@ int main( int t_narg, char **t_args )
         char l_buf[ 128 ];
         int l_len;
 
+        // down request
         printf("Sending down request!\n");
         l_len = sprintf(l_buf, DOWN_REQ, sem_name);
         l_len = write( l_sock_server, l_buf, l_len);
@@ -259,35 +249,30 @@ int main( int t_narg, char **t_args )
         else
             log_msg( LOG_DEBUG, "Sent %d bytes to server.", l_len );
 
-        // select from fds
-        if ( poll( &l_read_poll, 1, -1 ) < 0 ) break;
-
-        // data from server?
-        if ( l_read_poll.revents & POLLIN )
+        // read data from server
+        l_len = read( l_sock_server, l_buf, sizeof( l_buf ) );
+        if ( !l_len )
         {
-            // read data from server
-            int l_len = read( l_sock_server, l_buf, sizeof( l_buf ) );
-            if ( !l_len )
-            {
-                log_msg( LOG_DEBUG, "Server closed socket." );
-                break;
-            }
-            else if ( l_len < 0 )
-                log_msg( LOG_DEBUG, "Unable to read data from server." );
-            else
-                log_msg( LOG_DEBUG, "Read %d bytes from server.", l_len );
+            log_msg( LOG_DEBUG, "Server closed socket." );
+            break;
+        }
+        else if ( l_len < 0 )
+            log_msg( LOG_DEBUG, "Unable to read data from server." );
+        else
+            log_msg( LOG_DEBUG, "Read %d bytes from server.", l_len );
 
-            // display on stdout
-            l_len = write( STDOUT_FILENO, l_buf, l_len );
-            if ( l_len < 0 )
-                log_msg( LOG_ERROR, "Unable to write to stdout." ); 
+        // display on stdout
+        l_len = write( STDOUT_FILENO, l_buf, l_len );
+        if ( l_len < 0 )
+            log_msg( LOG_ERROR, "Unable to write to stdout." ); 
+
+        // some work
+        for (int i = 0; i < 10; i++) {
+            printf("%d\n", i);
+            usleep(200000);
         }
 
-        for (int i = 0; i < 3; i++) {
-            printf("%d: \n", i);
-            usleep(500000);
-        }
-
+        // up request
         printf("Sending up request!\n");
         l_len = sprintf(l_buf, UP_REQ, sem_name);
         l_len = write( l_sock_server, l_buf, l_len);
@@ -298,29 +283,22 @@ int main( int t_narg, char **t_args )
         else
             log_msg( LOG_DEBUG, "Sent %d bytes to server.", l_len );
 
-        // select from fds
-        if ( poll( &l_read_poll, 1, -1 ) < 0 ) break;
-
-        // data from server?
-        if ( l_read_poll.revents & POLLIN )
+        // read data from server
+        l_len = read( l_sock_server, l_buf, sizeof( l_buf ) );
+        if ( !l_len )
         {
-            // read data from server
-            int l_len = read( l_sock_server, l_buf, sizeof( l_buf ) );
-            if ( !l_len )
-            {
-                log_msg( LOG_DEBUG, "Server closed socket." );
-                break;
-            }
-            else if ( l_len < 0 )
-                log_msg( LOG_DEBUG, "Unable to read data from server." );
-            else
-                log_msg( LOG_DEBUG, "Read %d bytes from server.", l_len );
-
-            // display on stdout
-            l_len = write( STDOUT_FILENO, l_buf, l_len );
-            if ( l_len < 0 )
-                log_msg( LOG_ERROR, "Unable to write to stdout." ); 
+            log_msg( LOG_DEBUG, "Server closed socket." );
+            break;
         }
+        else if ( l_len < 0 )
+            log_msg( LOG_DEBUG, "Unable to read data from server." );
+        else
+            log_msg( LOG_DEBUG, "Read %d bytes from server.", l_len );
+
+        // display on stdout
+        l_len = write( STDOUT_FILENO, l_buf, l_len );
+        if ( l_len < 0 )
+            log_msg( LOG_ERROR, "Unable to write to stdout." ); 
     }
 
     // close socket
