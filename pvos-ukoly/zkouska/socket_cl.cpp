@@ -285,7 +285,7 @@ int main( int t_narg, char **t_args )
 
         for (int i = 0; i < 3; i++) {
             printf("Test %d\n", i);
-            sleep(1);
+            usleep(500000);
         }
 
         printf("Sending up request!\n");
