@@ -1,0 +1,27 @@
+Implementujte síťový semafor.
+
+Upravte SSL soketový server tak, aby pomocí více procesů obsluhoval více klientů a 
+odpovídal jim na požadavky:
+
+  - "INIT NAME VAL\n", na který odpoví klientovi "INIT-OK\n",
+  - "UP NAME\n", na který odpoví klientovi "UP-OK\n",
+  - "DOWN NAME\n", na který odpoví klientovi "DOWN-OK\n",
+  - "UNLINK NAME\n", na který odpoví klientovi "UNLINK-OK\n",
+  - na jakýkoliv jiný požadavek, nebo na požadavek ve špatném formátu, odpoví "ERR\n". 
+
+Na serveru se pak musí vytvořit ve sdílené paměti pole dvojic semafor-jméno a pak v procesech
+potomků budou koordinovat požadavky od klienta s požadovaným semaforem.
+
+  - server obdrží "DOWN\n",
+  - server zavolá DOWN(),
+  - server odpoví "DOWN-OK\n".
+
+Podobně bude proveden i požadavek UP a další.
+
+Kód pro potomka oddělte do samostatné funkce, ať je zřejmé, kdo provádí ktero část kódu.
+
+Dále upravte soketověho klienta tak, aby vykonával "nějakou" činnost a po připojení min. 3 klientů
+k serveru bude zřejmé, že je jejich činnost koordinována semaforem ze serveru.
+Vyzkoučejte i po síti, nejen localhost.
+
+sharememoryopen, truncate, map
