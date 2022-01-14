@@ -171,6 +171,11 @@ int semaphore_up(const char * name) {
     return 0;
 }
 
+// NOT IMPLEMENTED
+int semaphore_unlink(const char * name) {
+    return 1;
+}
+
 
 int fork_server(int l_sock_client) {
     while ( 1 )
@@ -255,23 +260,23 @@ int fork_server(int l_sock_client) {
                 log_msg( LOG_DEBUG, "Sent %d bytes to server.", l_len );
         } else if (!strncmp(l_buf, UNLINK_REQ, strlen(UNLINK_REQ)))
         {
-            printf("Up request!\n");
+            printf("Unlink request!\n");
 
-            sscanf(l_buf, "UP %s\n", name);
+            sscanf(l_buf, "UNLINK %s\n", name);
 
             printf("%s\n", name);
 
-            semaphore_up(name);
+            semaphore_unlink(name);
             
-            printf("Sending up response!\n");
-            l_len = write( l_sock_client, UP_RESP, strlen(UP_RESP));
+            printf("Sending unlink response!\n");
+            l_len = write( l_sock_client, UNLINK_RESP, strlen(UNLINK_RESP));
             if ( l_len < 0 ) {
                 log_msg( LOG_ERROR, "Unable to send data to server." );
                 return 1;
             }
             else
                 log_msg( LOG_DEBUG, "Sent %d bytes to server.", l_len );
-        }else {
+        } else {
             printf("Bad request!\n");
             printf("Sending err response!\n");
             l_len = write( l_sock_client, ERR_RESP, strlen(ERR_RESP));
